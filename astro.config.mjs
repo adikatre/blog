@@ -8,5 +8,6 @@ import { defineConfig } from 'astro/config';
 export default defineConfig({
 	site: 'https://adikatre.github.io',
 	base: '/blog',
+	trailingSlash: "always",
 	integrations: [mdx(), sitemap()],
 });
