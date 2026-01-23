@@ -1,0 +1,30 @@
+---
+// Utterances comments component
+// Uses GitHub Issues for comments - visitors need a GitHub account to comment
+// Configure the repo below to match your GitHub repository
+---
+
+<section class="comments">
+	<h2>Comments</h2>
+	<script
+		src="https://utteranc.es/client.js"
+		repo="adikatre/blog"
+		issue-term="pathname"
+		theme="github-light"
+		crossorigin="anonymous"
+		async
+	></script>
+</section>
+
+<style>
+	.comments {
+		width: 720px;
+		max-width: calc(100% - 2em);
+		margin: 2em auto;
+		padding: 1em;
+	}
+	.comments h2 {
+		margin-bottom: 1em;
+		color: rgb(var(--gray-dark));
+	}
+</style>
