@@ -1,0 +1,229 @@
+---
+import { getCollection } from 'astro:content';
+
+interface Props {
+	/** Series label shown in the badge, e.g. "CS113". */
+	series: string;
+	/** Id prefix that identifies members of this series, e.g. "cs113-". */
+	prefix: string;
+	currentId: string;
+}
+
+const { series, prefix, currentId } = Astro.props;
+const base = import.meta.env.BASE_URL;
+
+// Gather every post in this series and lay them out as an ordered network.
+// Membership is inferred from the shared id prefix, so dropping a new
+// `cs113-*` post into the blog folder wires it into the network automatically.
+const members = (await getCollection('blog'))
+	.filter((p) => p.id.startsWith(prefix))
+	.sort((a, b) => a.data.pubDate.valueOf() - b.data.pubDate.valueOf());
+
+const currentIndex = members.findIndex((p) => p.id === currentId);
+const prev = currentIndex > 0 ? members[currentIndex - 1] : null;
+const next = currentIndex < members.length - 1 ? members[currentIndex + 1] : null;
+
+// Short label for each node in the network map.
+const shortLabel = (title: string) =>
+	title.replace(/^CS113:\s*/i, '').trim();
+---
+
+{
+	members.length > 1 && (
+		<nav class="series-nav" aria-label={`${series} series navigation`}>
+			<p class="series-eyebrow">
+				<span class="series-badge">{series}</span>
+				Part {currentIndex + 1} of {members.length} — a connected series
+			</p>
+
+			<ol class="series-network">
+				{members.map((p, i) => {
+					const isCurrent = p.id === currentId;
+					return (
+						<li class={`node ${isCurrent ? 'is-current' : ''}`}>
+							{i > 0 && <span class="edge" aria-hidden="true" />}
+							<a href={`${base}blog/${p.id}/`} aria-current={isCurrent ? 'page' : undefined}>
+								<span class="dot">{i + 1}</span>
+								<span class="node-label">{shortLabel(p.data.title)}</span>
+							</a>
+						</li>
+					);
+				})}
+			</ol>
+
+			<div class="series-prevnext">
+				{prev ? (
+					<a class="pn prev" href={`${base}blog/${prev.id}/`}>
+						<span class="pn-dir">← Previous</span>
+						<span class="pn-title">{shortLabel(prev.data.title)}</span>
+					</a>
+				) : (
+					<span class="pn empty" />
+				)}
+				{next ? (
+					<a class="pn next" href={`${base}blog/${next.id}/`}>
+						<span class="pn-dir">Next →</span>
+						<span class="pn-title">{shortLabel(next.data.title)}</span>
+					</a>
+				) : (
+					<span class="pn empty" />
+				)}
+			</div>
+		</nav>
+	)
+}
+
+<style>
+	.series-nav {
+		margin: 3rem 0 1rem;
+		padding: 1.5rem;
+		border: 1px solid rgb(var(--gray-light));
+		border-radius: 14px;
+		background: rgb(var(--gray-light), 0.4);
+	}
+	.series-eyebrow {
+		margin: 0 0 1rem;
+		font-size: 0.9rem;
+		color: rgb(var(--gray));
+		display: flex;
+		align-items: center;
+		gap: 0.6rem;
+	}
+	.series-badge {
+		background: rgb(var(--accent));
+		color: white;
+		font-weight: 700;
+		font-size: 0.75rem;
+		letter-spacing: 0.05em;
+		padding: 0.2rem 0.55rem;
+		border-radius: 999px;
+	}
+
+	/* The network map: numbered nodes joined by edges. */
+	.series-network {
+		list-style: none;
+		margin: 0 0 1.25rem;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem 0;
+		align-items: stretch;
+	}
+	.node {
+		display: flex;
+		align-items: center;
+		flex: 1 1 0;
+		min-width: 140px;
+	}
+	.edge {
+		flex: 1;
+		height: 2px;
+		min-width: 12px;
+		background: rgb(var(--gray-light));
+		align-self: center;
+	}
+	.node a {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.4rem;
+		flex: 1;
+		text-align: center;
+		text-decoration: none;
+		padding: 0.5rem 0.4rem;
+		border-radius: 10px;
+		transition: background 0.2s ease;
+	}
+	.node a:hover {
+		background: rgb(var(--gray-light), 0.7);
+	}
+	.dot {
+		display: grid;
+		place-items: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 50%;
+		border: 2px solid rgb(var(--gray));
+		background: white;
+		color: rgb(var(--gray-dark));
+		font-weight: 700;
+		font-size: 0.9rem;
+	}
+	.node-label {
+		font-size: 0.8rem;
+		line-height: 1.2;
+		color: rgb(var(--gray-dark));
+		max-width: 12ch;
+	}
+	.is-current .dot {
+		border-color: rgb(var(--accent));
+		background: rgb(var(--accent));
+		color: white;
+		box-shadow: 0 0 0 4px rgb(var(--accent), 0.18);
+	}
+	.is-current .node-label {
+		color: rgb(var(--black));
+		font-weight: 700;
+	}
+
+	/* Previous / next pager. */
+	.series-prevnext {
+		display: flex;
+		gap: 1rem;
+		justify-content: space-between;
+	}
+	.pn {
+		flex: 1 1 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		padding: 0.75rem 1rem;
+		border: 1px solid rgb(var(--gray-light));
+		border-radius: 10px;
+		background: white;
+		text-decoration: none;
+		transition: box-shadow 0.2s ease;
+	}
+	.pn:hover {
+		box-shadow: var(--box-shadow);
+	}
+	.pn.next {
+		text-align: right;
+	}
+	.pn.empty {
+		border: none;
+		background: none;
+		pointer-events: none;
+	}
+	.pn-dir {
+		font-size: 0.75rem;
+		color: rgb(var(--accent));
+		font-weight: 700;
+	}
+	.pn-title {
+		font-size: 0.9rem;
+		color: rgb(var(--black));
+	}
+
+	@media (max-width: 720px) {
+		.series-network {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.node {
+			min-width: 0;
+		}
+		.edge {
+			display: none;
+		}
+		.node a {
+			flex-direction: row;
+			justify-content: flex-start;
+			gap: 0.75rem;
+			text-align: left;
+		}
+		.node-label {
+			max-width: none;
+		}
+	}
+</style>
