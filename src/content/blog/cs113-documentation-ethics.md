@@ -1,14 +1,14 @@
 ---
-title: 'CS113 Blog'
-description: 'Documentation & Social & Ethics'
-pubDate: 'May 28 2026'
+title: 'CS113: Documentation, Impact & Ethics'
+description: 'JavaDoc and Swagger documentation, real-world classroom problems the project addresses, and ethical considerations around privacy and credential hygiene.'
+pubDate: 'May 28 2026 13:00'
 ---
 
-# Documentation and Personal/Social Relevance Demonstrated Across `bathroom/`, `S3uploads/`, and `groups/chat/`
+Documentation and personal/social relevance demonstrated across `bathroom/`, `S3uploads/`, and `groups/chat/`.
 
-# 1. Code Comments — JavaDoc for Classes, Methods, and Complex Logic
+## 1. Code Comments — JavaDoc for Classes, Methods, and Complex Logic
 
-## Class-Level JavaDoc with Swagger Context
+### Class-Level JavaDoc with Swagger Context
 
 `BathroomQueueApiController.java:36-46`
 
@@ -41,7 +41,7 @@ This documents:
 
 ---
 
-## Method-Level JavaDoc with `@param`
+### Method-Level JavaDoc with `@param`
 
 `BathroomQueue.java:36-46`
 
@@ -75,7 +75,7 @@ These comments improve:
 
 ---
 
-## Complex Logic Comments
+### Complex Logic Comments
 
 `BathroomQueue.java:102-107`
 
@@ -99,7 +99,7 @@ Without this comment, the queue logic is harder to reason about.
 
 ---
 
-## Service-Level JavaDoc
+### Service-Level JavaDoc
 
 `GroupChatPresenceService.java:14-19`
 
@@ -122,7 +122,7 @@ Documents:
 
 ---
 
-## Annotation Explainer Comments
+### Annotation Explainer Comments
 
 `Teacher.java:26-32`
 
@@ -149,7 +149,7 @@ This helps newer developers understand:
 
 ---
 
-## Interface Contract Documentation
+### Interface Contract Documentation
 
 `FileHandler.java:1-47`
 
@@ -178,9 +178,9 @@ Documents:
 
 ---
 
-# 2. API Documentation — Swagger, DTOs, and Endpoint Contracts
+## 2. API Documentation — Swagger, DTOs, and Endpoint Contracts
 
-## Swagger/OpenAPI Controller Documentation
+### Swagger/OpenAPI Controller Documentation
 
 `BathroomQueueApiController.java:46-97`
 
@@ -214,7 +214,7 @@ automatically generates:
 
 ---
 
-## DTO Documentation
+### DTO Documentation
 
 `BathroomQueueApiController.java:63-83`
 
@@ -260,7 +260,7 @@ Documents:
 
 ---
 
-## Endpoint Contract Documentation
+### Endpoint Contract Documentation
 
 `BathroomQueueApiController.java:85-94`
 
@@ -287,7 +287,7 @@ Documents:
 
 ---
 
-## REST Endpoint JavaDoc
+### REST Endpoint JavaDoc
 
 `S3FileApiController.java:25-31`
 
@@ -314,9 +314,9 @@ This clearly explains:
 
 ---
 
-# 3. Help System — Validation Messages and User Guidance
+## 3. Help System — Validation Messages and User Guidance
 
-## User-Facing API Responses
+### User-Facing API Responses
 
 `BathroomQueueApiController.java:105-114`
 
@@ -344,7 +344,7 @@ These responses provide:
 
 ---
 
-## Queue-State Guidance
+### Queue-State Guidance
 
 `BathroomQueue.java:136-142`
 
@@ -372,7 +372,7 @@ Documents:
 
 ---
 
-## Validation Messages
+### Validation Messages
 
 `Teacher.java:55-61`
 
@@ -402,7 +402,7 @@ These messages act as:
 
 ---
 
-## Operational Help Messages
+### Operational Help Messages
 
 `S3FileHandler.java:51-55`
 
@@ -429,13 +429,13 @@ This gives operators:
 
 ---
 
-# 4. Blog Portfolio — Architecture and Design Artifacts
+## 4. Blog Portfolio — Architecture and Design Artifacts
 
 The repository already contains strong material for technical blog posts.
 
 ---
 
-## WebSocket Port Separation
+### WebSocket Port Separation
 
 Relevant files:
 
@@ -451,7 +451,7 @@ Interesting topics:
 
 ---
 
-## JSONL-Based Chat Storage
+### JSONL-Based Chat Storage
 
 Relevant files:
 
@@ -467,7 +467,7 @@ Interesting tradeoffs:
 
 ---
 
-## Bathroom Queue Domain Modeling
+### Bathroom Queue Domain Modeling
 
 Relevant file:
 
@@ -482,7 +482,7 @@ Interesting topics:
 
 ---
 
-## Polymorphic Submitter Design
+### Polymorphic Submitter Design
 
 Relevant file:
 
@@ -496,7 +496,7 @@ Interesting topics:
 
 ---
 
-## Git History for Portfolio Evidence
+### Git History for Portfolio Evidence
 
 Example commits:
 
@@ -515,13 +515,13 @@ Useful for:
 
 ---
 
-# 5. Project Impact — Real-World Problem Solving
+## 5. Project Impact — Real-World Problem Solving
 
 The domain model directly reflects real operational problems in schools.
 
 ---
 
-## Bathroom Queue Management
+### Bathroom Queue Management
 
 `BathroomQueue.java:21-46`
 
@@ -539,7 +539,7 @@ Solves:
 
 ---
 
-## Hall Pass Tracking
+### Hall Pass Tracking
 
 `HallPass.java:80-86`
 
@@ -562,7 +562,7 @@ Enables:
 
 ---
 
-## Bathroom Infrastructure Reporting
+### Bathroom Infrastructure Reporting
 
 `Issue.java:43-65`
 
@@ -597,7 +597,7 @@ Supports:
 
 ---
 
-## Group Collaboration and File Sharing
+### Group Collaboration and File Sharing
 
 Relevant files:
 
@@ -613,9 +613,9 @@ Provides:
 
 ---
 
-# 6. Ethical Considerations — Privacy, Security, Equity, Accessibility
+## 6. Ethical Considerations — Privacy, Security, Equity, Accessibility
 
-## Privacy and Data Deletion
+### Privacy and Data Deletion
 
 `S3FileHandler.java:117-155`
 
@@ -662,7 +662,7 @@ Supports:
 
 ---
 
-## Credential Hygiene
+### Credential Hygiene
 
 `S3FileHandler.java:36-46`
 

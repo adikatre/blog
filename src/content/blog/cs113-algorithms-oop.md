@@ -1,17 +1,14 @@
 ---
-title: 'CS113 Blog'
-description: 'Algorithms'
-pubDate: 'May 28 2026'
+title: 'CS113: Algorithms, OOP & Engineering Concepts'
+description: 'Searching, sorting, hashing, Big-O analysis, abstraction, inheritance, polymorphism, and design patterns across the bathroom, groups, and S3 modules.'
+pubDate: 'May 28 2026 10:00'
 ---
 
+Data structures, algorithms, OOP, and software engineering concepts demonstrated across `bathroom/`, `S3uploads/`, `groups/`, and `chat/`.
 
-# Data Structures, Algorithms, OOP, and Software Engineering Concepts in the Project
+## 1. Searching — Linear Search, DB Queries, Derived Finders
 
----
-
-# 1. Searching — Linear Search, DB Queries, Derived Finders
-
-## Linear Search Over a Queue
+### Linear Search Over a Queue
 
 **File:** `BathroomQueue.java:73-78`
 
@@ -30,7 +27,7 @@ public int getStudentIndex(String studentName) {
 
 ---
 
-## Database Search with Spring Data JPA
+### Database Search with Spring Data JPA
 
 **File:** `GroupsJpaRepository.java:46-50`
 
@@ -52,7 +49,7 @@ List<Groups> searchByName(@Param("searchTerm") String searchTerm);
 
 ---
 
-## S3 Prefix Search
+### S3 Prefix Search
 
 **File:** `S3FileHandler.java:158-178`
 
@@ -76,9 +73,9 @@ public List<String> listFiles(String prefix) {
 
 ---
 
-# 2. Sorting — Comparator, Comparable, ORDER BY
+## 2. Sorting — Comparator, Comparable, ORDER BY
 
-## Java Comparator Sorting
+### Java Comparator Sorting
 
 **File:** `GroupChatPresenceService.java:80-83`
 
@@ -93,7 +90,7 @@ return participantCounts.keySet().stream()
 
 ---
 
-## Database Sorting
+### Database Sorting
 
 **Files:** `TeacherJpaRepository.java:9`, `GroupsJpaRepository.java:17`
 
@@ -107,9 +104,9 @@ List<Groups>  findAllByOrderByNameAsc();
 
 ---
 
-# 3. Hashing — HashMap, HashSet, ConcurrentHashMap
+## 3. Hashing — HashMap, HashSet, ConcurrentHashMap
 
-## HashMap Analytics Aggregation
+### HashMap Analytics Aggregation
 
 **File:** `TinkleStatisticsService.java:40-47`
 
@@ -134,7 +131,7 @@ for (Map.Entry<String, List<Long>> entry : userWeeklyDurations.entrySet()) {
 
 ---
 
-## Concurrent Hash Tables
+### Concurrent Hash Tables
 
 **File:** `GroupChatPresenceService.java:23-24`
 
@@ -152,7 +149,7 @@ private final ConcurrentMap<Long,
 
 ---
 
-## S3 Content Key Hashing
+### S3 Content Key Hashing
 
 **File:** `S3FileHandler.java:199-201`
 
@@ -167,7 +164,7 @@ private String generateKey(String uid, String filename) {
 
 ---
 
-# 4. Algorithm Analysis — Big-O Complexity
+## 4. Algorithm Analysis — Big-O Complexity
 
 | Operation                         | File                               | Big-O                      |
 | --------------------------------- | ---------------------------------- | -------------------------- |
@@ -180,15 +177,15 @@ private String generateKey(String uid, String filename) {
 | `deleteFiles`                     | `S3FileHandler.java:118`           | `O(n)` list                |
 | `calculateAverageWeeklyDurations` | `TinkleStatisticsService.java:27`  | `O(n·k)`                   |
 
-## Trade-Off Note
+### Trade-Off Note
 
 The chat write path is **O(n)** per message because `addMessage()` re-serializes and re-uploads the entire JSONL file. This works for small groups but scales poorly as message count increases.
 
 ---
 
-# 5. Abstraction — Interfaces and Abstract Classes
+## 5. Abstraction — Interfaces and Abstract Classes
 
-## FileHandler Interface
+### FileHandler Interface
 
 **File:** `FileHandler.java:1-47`
 
@@ -212,7 +209,7 @@ public interface FileHandler {
 
 ---
 
-## Abstract Base Class
+### Abstract Base Class
 
 **File:** `Submitter.java:26-42`
 
@@ -240,7 +237,7 @@ public abstract class Submitter {
 
 ---
 
-# 6. Encapsulation — Private State and Controlled Mutation
+## 6. Encapsulation — Private State and Controlled Mutation
 
 **Files:** `BathroomQueue.java:27-32`, `53-110`
 
@@ -266,7 +263,7 @@ Example:
 
 ---
 
-# 7. Inheritance — Submitter → Groups
+## 7. Inheritance — Submitter → Groups
 
 **File:** `Groups.java:29-46`
 
@@ -288,7 +285,7 @@ public class Groups extends Submitter {
 
 ---
 
-## JOINED Inheritance Strategy
+### JOINED Inheritance Strategy
 
 **File:** `Submitter.java:17`
 
@@ -301,9 +298,9 @@ public class Groups extends Submitter {
 
 ---
 
-# 8. Polymorphism — Runtime Dispatch
+## 8. Polymorphism — Runtime Dispatch
 
-## FileHandler Polymorphism
+### FileHandler Polymorphism
 
 **Files:** `ChatService.java:25`, `GroupChatService.java:28`
 
@@ -318,7 +315,7 @@ s3FileHandler.uploadFile(base64Data, MESSAGES_FILE, groupName);
 
 ---
 
-## Runtime Behavior Switching
+### Runtime Behavior Switching
 
 **File:** `Submitter.java:36-41`
 
@@ -336,9 +333,9 @@ public List<Person> getMembers() {
 
 ---
 
-# 9. Design Patterns
+## 9. Design Patterns
 
-## MVC Pattern
+### MVC Pattern
 
 | Role       | Example                      |
 | ---------- | ---------------------------- |
@@ -350,7 +347,7 @@ Also present in the groups module.
 
 ---
 
-## Repository Pattern
+### Repository Pattern
 
 Examples:
 
@@ -363,7 +360,7 @@ GroupsJpaRepository.java
 
 ---
 
-## Strategy / Dependency Injection
+### Strategy / Dependency Injection
 
 ```java
 @Autowired
@@ -374,7 +371,7 @@ private FileHandler fileHandler;
 
 ---
 
-## Singleton Pattern
+### Singleton Pattern
 
 Spring-managed services:
 
@@ -391,7 +388,7 @@ Examples:
 
 ---
 
-## DTO Pattern
+### DTO Pattern
 
 Examples:
 
@@ -403,7 +400,7 @@ Examples:
 
 ---
 
-## Factory Pattern
+### Factory Pattern
 
 ```java
 BathroomQueue.init()
@@ -415,7 +412,7 @@ Issue.init()
 
 ---
 
-# 10. Version Control — Git History
+## 10. Version Control — Git History
 
 Example commits:
 
@@ -431,9 +428,9 @@ a7a07f89 email send hashmap
 
 ---
 
-# 11. Testing — JUnit and API Testing
+## 11. Testing — JUnit and API Testing
 
-## JUnit Test Structure
+### JUnit Test Structure
 
 ```text
 src/test/java/com/open/spring/mvc/chat/
@@ -443,7 +440,7 @@ src/test/java/com/open/spring/mvc/chat/
 
 ---
 
-## REST API Testing
+### REST API Testing
 
 Controllers return proper HTTP responses:
 
@@ -460,9 +457,9 @@ Supports:
 
 ---
 
-# 12. Build Tools — Maven
+## 12. Build Tools — Maven
 
-## Maven Configuration
+### Maven Configuration
 
 ```text
 pom.xml
@@ -477,7 +474,7 @@ Handles:
 
 ---
 
-## Example Dependencies
+### Example Dependencies
 
 ```java
 software.amazon.awssdk
@@ -486,9 +483,9 @@ lombok.extern.slf4j.Slf4j
 
 ---
 
-# 13. Debugging — Logging and Defensive Programming
+## 13. Debugging — Logging and Defensive Programming
 
-## SLF4J Logging
+### SLF4J Logging
 
 **File:** `S3FileHandler.java:65-89`
 
@@ -524,7 +521,7 @@ public class S3FileHandler implements FileHandler {
 
 ---
 
-## Fault-Tolerant Parsing
+### Fault-Tolerant Parsing
 
 **File:** `GroupChatService.java:81-83`
 
@@ -543,9 +540,9 @@ public class S3FileHandler implements FileHandler {
 
 ---
 
-# 14. API Development — REST Endpoints and HTTP Codes
+## 14. API Development — REST Endpoints and HTTP Codes
 
-## REST Endpoint Example
+### REST Endpoint Example
 
 **File:** `BathroomQueueApiController.java:98-116`
 
@@ -575,7 +572,7 @@ public ResponseEntity<String> addQueue(
 
 ---
 
-## HTTP Status Usage
+### HTTP Status Usage
 
 Examples:
 
@@ -587,7 +584,7 @@ Examples:
 
 ---
 
-## Swagger/OpenAPI Documentation
+### Swagger/OpenAPI Documentation
 
 ```java
 @Tag(
@@ -604,9 +601,9 @@ Examples:
 
 ---
 
-# 15. Database Integration — JPA Relationships
+## 15. Database Integration — JPA Relationships
 
-## One-to-One Relationship
+### One-to-One Relationship
 
 **File:** `Tinkle.java:37-41`
 
@@ -620,7 +617,7 @@ private Person person;
 
 ---
 
-## Many-to-Many Relationship
+### Many-to-Many Relationship
 
 **File:** `Groups.java:30-37`
 
@@ -644,7 +641,7 @@ private List<Person> groupMembers = new ArrayList<>();
 
 ---
 
-## One-to-Many Relationship
+### One-to-Many Relationship
 
 **File:** `Submitter.java:31-33`
 
@@ -660,7 +657,7 @@ private List<AssignmentSubmission> submissions;
 
 ---
 
-## Custom JPQL + Native SQL
+### Custom JPQL + Native SQL
 
 **File:** `GroupsJpaRepository.java:20-43`
 
@@ -689,7 +686,7 @@ List<Object[]> findGroupMembersRaw(
 
 ---
 
-## JSON Column Mapping
+### JSON Column Mapping
 
 ```java
 @JdbcTypeCode(SqlTypes.JSON)

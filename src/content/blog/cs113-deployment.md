@@ -1,19 +1,19 @@
 ---
-title: 'CS113 Blog'
-description: 'Deployment'
-pubDate: 'May 28 2026'
+title: 'CS113: Deployment, Docker, DNS & nginx'
+description: 'How the Spring backend is packaged with Docker, exposed through nginx with TLS and WebSocket routing, and the gaps in the current CI/CD pipeline.'
+pubDate: 'May 28 2026 12:00'
 ---
 
-# Deployment Concepts Demonstrated Across `bathroom/`, `S3uploads/`, and `groups/chat/`
+Deployment concepts demonstrated across `bathroom/`, `S3uploads/`, and `groups/chat/`.
 
-# 1. Docker — `Dockerfile` and `docker-compose.yml`
+## 1. Docker — `Dockerfile` and `docker-compose.yml`
 
-## Dockerfile
+### Dockerfile
 
 The project uses a minimal Docker image that builds the Spring Boot JAR inside the container and exposes both REST and WebSocket ports.
 
 ```dockerfile
-# syntax=docker/dockerfile:1
+## syntax=docker/dockerfile:1
 
 FROM eclipse-temurin:21-jdk-alpine
 
@@ -33,9 +33,9 @@ EXPOSE 8585
 EXPOSE 8589
 ```
 
-## Port Usage
+### Port Usage
 
-### `EXPOSE 8585`
+#### `EXPOSE 8585`
 
 Used by:
 
@@ -44,7 +44,7 @@ Used by:
 * `S3FileApiController`
 * REST endpoints in `GroupChatApiController`
 
-### `EXPOSE 8589`
+#### `EXPOSE 8589`
 
 Dedicated WebSocket port configured by:
 
@@ -57,7 +57,7 @@ Used for:
 * `GroupChatWebSocketController`
 * presence updates in `GroupChatPresenceService`
 
-## Maven Build Inside Docker
+### Maven Build Inside Docker
 
 ```dockerfile
 RUN ./mvnw package
@@ -73,7 +73,7 @@ Compiles:
 
 into a runnable Spring Boot JAR.
 
-## Image Characteristics
+### Image Characteristics
 
 The image intentionally remains minimal:
 
@@ -83,7 +83,7 @@ The image intentionally remains minimal:
 
 ---
 
-## `docker-compose.yml`
+### `docker-compose.yml`
 
 ```yaml
 version: '3'
@@ -103,9 +103,9 @@ services:
     restart: unless-stopped
 ```
 
-## Compose Networking
+### Compose Networking
 
-### `8585:8585`
+#### `8585:8585`
 
 Exposes:
 
@@ -113,7 +113,7 @@ Exposes:
 * S3 upload/download APIs
 * groups REST APIs
 
-### `8589:8589`
+#### `8589:8589`
 
 Exposes:
 
@@ -121,7 +121,7 @@ Exposes:
 * STOMP/SockJS connections
 * live chat presence updates
 
-## Persistent Volume Mapping
+### Persistent Volume Mapping
 
 ```yaml
 ./volumes:/app/volumes
@@ -135,7 +135,7 @@ Provides persistence for:
 
 across container restarts.
 
-## Environment Variables
+### Environment Variables
 
 No `environment:` block exists.
 
@@ -156,7 +156,7 @@ used by `S3FileHandler` via `@Value`.
 
 ---
 
-# 2. DNS Configuration
+## 2. DNS Configuration
 
 No DNS infrastructure files exist in the repository:
 
@@ -169,7 +169,7 @@ The deployment topology is inferred from code and documentation.
 
 ---
 
-## Production Hostnames
+### Production Hostnames
 
 `README.md`
 
@@ -179,9 +179,9 @@ The deployment topology is inferred from code and documentation.
 - JWT Login:     https://pages.opencodingsociety.com/login
 ```
 
-## Domain Responsibilities
+### Domain Responsibilities
 
-### `spring.opencodingsociety.com`
+#### `spring.opencodingsociety.com`
 
 Hosts the Spring backend:
 
@@ -190,7 +190,7 @@ Hosts the Spring backend:
 * S3 APIs
 * WebSocket endpoints
 
-### `pages.opencodingsociety.com`
+#### `pages.opencodingsociety.com`
 
 Hosts the frontend:
 
@@ -200,9 +200,9 @@ Hosts the frontend:
 
 ---
 
-## Cross-Origin Configuration
+### Cross-Origin Configuration
 
-### Bathroom Queue API
+#### Bathroom Queue API
 
 ```java
 @CrossOrigin(origins = {
@@ -218,7 +218,7 @@ Allows:
 
 ---
 
-### S3 File API
+#### S3 File API
 
 ```java
 @RestController
@@ -230,7 +230,7 @@ No local `@CrossOrigin` annotation exists, so it inherits global CORS configurat
 
 ---
 
-### Group Chat API
+#### Group Chat API
 
 ```java
 @RestController
@@ -242,7 +242,7 @@ Uses global CORS rules as well.
 
 ---
 
-## JWT Cookie Domain Sharing
+### JWT Cookie Domain Sharing
 
 ```java
 cookieBuilder.domain(".opencodingsociety.com");
@@ -257,7 +257,7 @@ so browser sessions can authenticate API calls across subdomains.
 
 ---
 
-## DNS Topology Summary
+### DNS Topology Summary
 
 ```text
 opencodingsociety.com
@@ -274,13 +274,13 @@ The topology is encoded through:
 
 ---
 
-# 3. nginx — `nginx_spring_8585_8589.conf`
+## 3. nginx — `nginx_spring_8585_8589.conf`
 
 The repository contains a single nginx configuration file with approximately 315 lines.
 
 ---
 
-## Server Name and Upload Limits
+### Server Name and Upload Limits
 
 ```nginx
 server_name spring.opencodingsociety.com;
@@ -288,7 +288,7 @@ server_name spring.opencodingsociety.com;
 client_max_body_size 50M;
 ```
 
-## Upload Limit Behavior
+### Upload Limit Behavior
 
 `client_max_body_size 50M` sets the maximum upload size for:
 
@@ -306,7 +306,7 @@ before reaching `S3FileHandler`.
 
 ---
 
-## REST Proxy Routing
+### REST Proxy Routing
 
 ```nginx
 location / {
@@ -328,7 +328,7 @@ All REST traffic routes through port `8585`, including:
 * `/api/files/**`
 * `/api/groups/**`
 
-## Forwarded Headers
+### Forwarded Headers
 
 `X-Forwarded-*` headers preserve:
 
@@ -346,7 +346,7 @@ This is important for:
 
 ---
 
-## Dedicated WebSocket Proxy
+### Dedicated WebSocket Proxy
 
 ```nginx
 location /ws-chat {
@@ -369,9 +369,9 @@ location /ws-chat {
 }
 ```
 
-## WebSocket Features Enabled
+### WebSocket Features Enabled
 
-### Upgrade Headers
+#### Upgrade Headers
 
 ```nginx
 proxy_set_header Upgrade $http_upgrade;
@@ -384,7 +384,7 @@ Enable:
 * STOMP upgrades
 * SockJS communication
 
-### Long-Lived Connections
+#### Long-Lived Connections
 
 ```nginx
 proxy_read_timeout 86400;
@@ -397,7 +397,7 @@ Allow:
 * presence tracking
 * persistent subscriptions
 
-### Disabled Proxy Buffering
+#### Disabled Proxy Buffering
 
 ```nginx
 proxy_buffering off;
@@ -410,7 +410,7 @@ Improves:
 
 ---
 
-## TLS Termination
+### TLS Termination
 
 ```nginx
 listen [::]:443 ssl;
@@ -423,7 +423,7 @@ include /etc/letsencrypt/options-ssl-nginx.conf;
 ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 ```
 
-## HTTPS Responsibilities
+### HTTPS Responsibilities
 
 nginx terminates TLS for:
 
@@ -442,7 +442,7 @@ Let's Encrypt
 
 ---
 
-## HTTP → HTTPS Redirect
+### HTTP → HTTPS Redirect
 
 ```nginx
 server {
@@ -471,7 +471,7 @@ never travel over plaintext HTTP.
 
 ---
 
-# 4. CI/CD — Currently Not Present
+## 4. CI/CD — Currently Not Present
 
 The repository does not contain:
 
@@ -490,9 +490,9 @@ which handles local orchestration, not automation pipelines.
 
 ---
 
-## Missing Pipeline Features
+### Missing Pipeline Features
 
-### No Automated Build Step
+#### No Automated Build Step
 
 Missing:
 
@@ -508,7 +508,7 @@ Consequences:
 
 ---
 
-### No Automated Test Execution
+#### No Automated Test Execution
 
 JUnit tests under:
 
@@ -524,7 +524,7 @@ are never automatically run on:
 
 ---
 
-### No Docker Build/Push Automation
+#### No Docker Build/Push Automation
 
 The Docker image exposing:
 
@@ -535,7 +535,7 @@ must be manually built and deployed.
 
 ---
 
-### No Secret Management Pipeline
+#### No Secret Management Pipeline
 
 No CI secret injection exists for:
 
@@ -548,7 +548,7 @@ Therefore, `S3FileHandler` only works when operators manually inject environment
 
 ---
 
-### No Automated Deployment
+#### No Automated Deployment
 
 Deployments to:
 
@@ -566,7 +566,7 @@ This affects releases for:
 
 ---
 
-# Minimal CI/CD Pipeline Recommendation
+## Minimal CI/CD Pipeline Recommendation
 
 A minimal GitHub Actions workflow could:
 

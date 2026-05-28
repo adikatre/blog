@@ -1,11 +1,10 @@
 ---
-title: 'CS113 Blog'
-description: 'Data Structures'
-pubDate: 'May 28 2026'
+title: 'CS113: Java Data Structures in Practice'
+description: 'Collections, lists, FIFO queues, trees, sets, maps, and graphs — concrete uses across the bathroom queue, group chat, and presence-tracking code.'
+pubDate: 'May 28 2026 11:00'
 ---
 
-
-# Java Data Structures Demonstrated Across `bathroom/`, `S3uploads/`, `groups/`, and `chat/`
+Java data structures demonstrated across `bathroom/`, `S3uploads/`, `groups/`, and `chat/`.
 
 ## 1. Collections — ArrayList, HashMap, HashSet
 
@@ -47,7 +46,7 @@ private Map<String, Map<String, Object>> stats = new HashMap<>();
 
 ---
 
-# 2. Lists — Add / Remove / Search / Iterate
+## 2. Lists — Add / Remove / Search / Iterate
 
 `Groups` wraps a JPA `List<Person>` and exposes safe add/remove operations using `contains`.
 
@@ -98,11 +97,11 @@ boolean removed = messages.removeIf(m -> messageId.equals(m.getId()));
 
 ---
 
-# 3. Stacks / Queues — BathroomQueue (FIFO)
+## 3. Stacks / Queues — BathroomQueue (FIFO)
 
 `BathroomQueue` implements queue behavior using a comma-separated string structure.
 
-## Enqueue
+### Enqueue
 
 ```java
 // bathroom/BathroomQueue.java:53-59
@@ -115,7 +114,7 @@ public void addStudent(String studentName) {
 }
 ```
 
-## Peek (Front of Queue)
+### Peek (Front of Queue)
 
 ```java
 // bathroom/BathroomQueue.java:115-120
@@ -127,7 +126,7 @@ public String getFrontStudent() {
 }
 ```
 
-## Dequeue / Approval Pop
+### Dequeue / Approval Pop
 
 ```java
 // bathroom/BathroomQueue.java:127-143
@@ -149,7 +148,7 @@ The teacher always approves the student at the front of the line, matching FIFO 
 
 ---
 
-# 4. Trees — Hierarchical Aggregation Structure
+## 4. Trees — Hierarchical Aggregation Structure
 
 `TinkleStatisticsService` uses `Collectors.groupingBy()` to create a hierarchical aggregation structure.
 
@@ -182,7 +181,7 @@ This tree-like structure is commonly consumed by decision-tree ML systems such a
 
 ---
 
-# 5. Sets — Unique Data with HashSet / ConcurrentHashMap.newKeySet
+## 5. Sets — Unique Data with HashSet / ConcurrentHashMap.newKeySet
 
 `PresenceSession` uses a concurrent set to prevent duplicate group memberships per session.
 
@@ -213,7 +212,7 @@ This guarantees uniqueness while enabling safe concurrent iteration.
 
 ---
 
-# 6. Dictionaries / Maps — Key/Value Analytics and Configuration
+## 6. Dictionaries / Maps — Key/Value Analytics and Configuration
 
 `GroupChatService.getUserAnalytics()` builds nested analytics payloads using `HashMap`.
 
@@ -258,11 +257,11 @@ files.add(fileEntry);
 
 ---
 
-# 7. Graphs — Group ↔ Member Adjacency and Traversal
+## 7. Graphs — Group ↔ Member Adjacency and Traversal
 
 The `Groups ↔ Person` many-to-many relationship forms a bipartite graph represented as an adjacency list.
 
-## Adjacency List Representation
+### Adjacency List Representation
 
 ```java
 // groups/Groups.java:30-37
@@ -287,7 +286,7 @@ Conceptually:
 Group -> Members
 ```
 
-## Graph Traversal for Analytics
+### Graph Traversal for Analytics
 
 `getUserAnalytics()` traverses a user's connected groups and aggregates metrics.
 
