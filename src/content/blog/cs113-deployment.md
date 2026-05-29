@@ -1,10 +1,13 @@
 ---
 title: 'CS113: Deployment, Docker, DNS & nginx'
-description: 'How the Spring backend is packaged with Docker, exposed through nginx with TLS and WebSocket routing, and the gaps in the current CI/CD pipeline.'
+description: 'How the Spring backend is packaged with Docker, exposed through nginx with TLS and WebSocket routing, and the GitHub Actions pipeline that builds and deploys the Jekyll frontend.'
 pubDate: 'May 28 2026 12:00'
+heroImage: '../../assets/cs113-deployment.jpg'
 ---
 
 Deployment concepts demonstrated across `bathroom/`, `S3uploads/`, and `groups/chat/`.
+
+**Source:** [Pirna-spring](https://github.com/adikatre/Pirna-spring) (Spring backend) · [Pirna-pages](https://github.com/adikatre/Pirna-pages) (frontend)
 
 ## 1. Docker — `Dockerfile` and `docker-compose.yml`
 
@@ -137,35 +140,33 @@ across container restarts.
 
 ### Environment Variables
 
-No `environment:` block exists.
+No `environment:` block exists in the compose file. Instead, configuration lives in a `.env` file at the project root, which is **gitignored** so credentials never reach the repository.
 
-Therefore, values such as:
+Values such as:
 
 * `AWS_ACCESS_KEY_ID`
 * `AWS_SECRET_ACCESS_KEY`
 * `AWS_REGION`
 * `AWS_S3_BUCKET`
 
-must be provided externally through:
+are loaded from that gitignored `.env` file, and can also be supplied through:
 
 * host environment variables
 * CI/CD secrets
 * container runtime injection
 
-used by `S3FileHandler` via `@Value`.
+They are consumed by `S3FileHandler` via `@Value`.
 
 ---
 
 ## 2. DNS Configuration
 
-No DNS infrastructure files exist in the repository:
+DNS is managed through **AWS Route 53**, with **S3** backing the static-hosting side of the deployment:
 
-* no Route 53 configuration
-* no Terraform
-* no Kubernetes ingress
-* no static DNS manifests
+* a Route 53 hosted zone resolves `opencodingsociety.com` and its subdomains
+* S3 bucket configuration serves/stores the static content and uploads
 
-The deployment topology is inferred from code and documentation.
+These are configured in the AWS console rather than committed as infrastructure files, so the repository itself contains no Terraform, Kubernetes ingress, or static DNS manifests — the topology below reflects the live Route 53 + S3 setup.
 
 ---
 
@@ -471,104 +472,116 @@ never travel over plaintext HTTP.
 
 ---
 
-## 4. CI/CD — Currently Not Present
+## 4. CI/CD — GitHub Actions
 
-The repository does not contain:
+The frontend (`pages.opencodingsociety.com`, a Jekyll site) is built and deployed automatically by a GitHub Actions workflow under `.github/workflows/`. On every push to `main` — and on manual `workflow_dispatch` — it:
 
-* `.github/workflows/`
-* `Jenkinsfile`
-* `.gitlab-ci.yml`
-* `.circleci/config.yml`
+* sets up Ruby + Bundler (cached) and a Python virtual environment
+* distributes registered project and documentation files into Jekyll locations (`make build-registered-projects`, `make build-registered-docs`)
+* converts Jupyter notebooks and DOCX files to Markdown (`scripts/convert_notebooks.py`, `scripts/convert_docx.py`)
+* splits multi-course files (`scripts/split_multi_course_files.py`)
+* computes and applies the correct `baseurl` for the repository
+* builds the site with Jekyll and uploads the artifact
+* deploys to GitHub Pages via `actions/deploy-pages`
 
-The only YAML file present is:
+```yaml
+# .github/workflows/ — Deploy Jekyll site to GitHub Pages
+name: Deploy Jekyll with GitHub Pages dependencies preinstalled
 
-```text
-docker-compose.yml
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      - name: Install Jekyll and dependencies
+        run: |
+          gem install bundler
+          bundle install
+      - name: Install Python dependencies
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+      - name: Build registered projects
+        run: |
+          make build-registered-projects
+          make build-registered-docs
+      - name: Execute notebook conversion script
+        run: |
+          source venv/bin/activate
+          python scripts/convert_notebooks.py
+      - name: Execute DOCX conversion script
+        run: |
+          source venv/bin/activate
+          if [ -d "_docx" ] && [ "$(ls -A _docx 2>/dev/null)" ]; then
+            python scripts/convert_docx.py
+          else
+            echo "No DOCX files found, skipping conversion"
+          fi
+      - name: Split multi-course files
+        run: |
+          source venv/bin/activate
+          python scripts/split_multi_course_files.py
+      - name: Compute and apply baseurl
+        run: |
+          REPO="${{ github.repository }}"
+          OWNER=$(echo "$REPO" | cut -d'/' -f1)
+          NAME=$(echo "$REPO" | cut -d'/' -f2)
+          if [[ "$NAME" == "$OWNER.github.io" ]]; then
+            BASEURL=""
+          elif [[ "$REPO" = "Open-Coding-Society/pages" ]]; then
+            BASEURL=""
+          else
+            BASEURL="/$NAME"
+          fi
+          echo "baseurl: \"$BASEURL\"" > _config.override.yml
+      - name: Build with Jekyll
+        run: bundle exec jekyll build --config _config.yml,_config.override.yml
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: _site
+
+  deploy:
+    environment:
+      name: github-pages-deployment
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
 ```
 
-which handles local orchestration, not automation pipelines.
-
 ---
 
-### Missing Pipeline Features
+## Minimal Backend CI/CD Pipeline Recommendation
 
-#### No Automated Build Step
-
-Missing:
-
-```bash
-mvn -B package
-```
-
-Consequences:
-
-* no automatic verification
-* no compile validation on PRs
-* no regression prevention
-
----
-
-#### No Automated Test Execution
-
-JUnit tests under:
-
-```text
-src/test/java/com/open/spring/mvc/chat/
-```
-
-are never automatically run on:
-
-* pull requests
-* pushes
-* merges
-
----
-
-#### No Docker Build/Push Automation
-
-The Docker image exposing:
-
-* `8585`
-* `8589`
-
-must be manually built and deployed.
-
----
-
-#### No Secret Management Pipeline
-
-No CI secret injection exists for:
-
-* `AWS_ACCESS_KEY_ID`
-* `AWS_SECRET_ACCESS_KEY`
-* `AWS_REGION`
-* `AWS_S3_BUCKET`
-
-Therefore, `S3FileHandler` only works when operators manually inject environment variables.
-
----
-
-#### No Automated Deployment
-
-Deployments to:
-
-```text
-spring.opencodingsociety.com
-```
-
-must be performed manually.
-
-This affects releases for:
-
-* bathroom queue APIs
-* group chat APIs
-* S3 upload services
-
----
-
-## Minimal CI/CD Pipeline Recommendation
-
-A minimal GitHub Actions workflow could:
+The Spring backend (`spring.opencodingsociety.com`) is still deployed by hand. A minimal GitHub Actions workflow for the backend could:
 
 1. Install Java 21
 

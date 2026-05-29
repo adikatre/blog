@@ -36,6 +36,24 @@ const { title, description, image = FallbackImage } = Astro.props;
 <link rel="preload" href={`${base}fonts/atkinson-regular.woff`} as="font" type="font/woff" crossorigin />
 <link rel="preload" href={`${base}fonts/atkinson-bold.woff`} as="font" type="font/woff" crossorigin />
 
+<!-- Font faces (URLs include the base path) -->
+<style is:global set:html={`
+	@font-face {
+		font-family: "Atkinson";
+		src: url("${base}fonts/atkinson-regular.woff") format("woff");
+		font-weight: 400;
+		font-style: normal;
+		font-display: swap;
+	}
+	@font-face {
+		font-family: "Atkinson";
+		src: url("${base}fonts/atkinson-bold.woff") format("woff");
+		font-weight: 700;
+		font-style: normal;
+		font-display: swap;
+	}
+`}></style>
+
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
 

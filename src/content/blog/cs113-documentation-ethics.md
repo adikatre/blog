@@ -2,9 +2,12 @@
 title: 'CS113: Documentation, Impact & Ethics'
 description: 'JavaDoc and Swagger documentation, real-world classroom problems the project addresses, and ethical considerations around privacy and credential hygiene.'
 pubDate: 'May 28 2026 13:00'
+heroImage: '../../assets/cs113-documentation-ethics.jpg'
 ---
 
 Documentation and personal/social relevance demonstrated across `bathroom/`, `S3uploads/`, and `groups/chat/`.
+
+**Source:** [Pirna-spring](https://github.com/adikatre/Pirna-spring) (Spring backend) · [Pirna-pages](https://github.com/adikatre/Pirna-pages) (frontend)
 
 ## 1. Code Comments — JavaDoc for Classes, Methods, and Complex Logic
 
@@ -517,7 +520,7 @@ Useful for:
 
 ## 5. Project Impact — Real-World Problem Solving
 
-The domain model directly reflects real operational problems in schools.
+Deployed for all 100+ students in the Del Norte High School CS program, the system creates accountability around excessive bathroom time and social loafing — and, critically, ensures nobody is left unaccounted for in the event of a fire or other emergency evacuation. The domain model directly reflects these real operational problems in schools.
 
 ---
 
@@ -532,9 +535,10 @@ private int maxOccupancy = 1;
 
 Solves:
 
-* classroom disruption
-* hallway congestion
-* teacher tracking difficulties
+* accountability for excessive bathroom time
+* social loafing during group work
+* emergency roll-call — nobody unaccounted for during a fire/evacuation
+* classroom disruption and hallway congestion
 * occupancy management
 
 ---
@@ -614,6 +618,12 @@ Provides:
 ---
 
 ## 6. Ethical Considerations — Privacy, Security, Equity, Accessibility
+
+### Biometric Data Protection
+
+Because the system handles facial scans and images of students' faces, these biometric assets are stored and secured on the backend (server-side, never exposed to the client). Keeping likeness data access-controlled and off the frontend is the most sensitive privacy obligation in the project.
+
+---
 
 ### Privacy and Data Deletion
 

@@ -2,14 +2,12 @@
 title: 'CS113: Java Data Structures in Practice'
 description: 'Collections, lists, FIFO queues, trees, sets, maps, and graphs — concrete uses across the bathroom queue, group chat, and presence-tracking code.'
 pubDate: 'May 28 2026 11:00'
+heroImage: '../../assets/cs113-data-structures.jpg'
 ---
 
 Java data structures demonstrated across `bathroom/`, `S3uploads/`, `groups/`, and `chat/`.
 
-> **Run the code.** Every cell below has a **▶ Run** button. The snippets are
-> distilled from the real Spring/JPA project into self-contained programs you can
-> execute live (compiled and run on Wandbox) — the framework types are swapped for
-> plain Java so the concept runs in isolation.
+**Source:** [Pirna-spring](https://github.com/adikatre/Pirna-spring) (Spring backend) · [Pirna-pages](https://github.com/adikatre/Pirna-pages) (frontend)
 
 ## 1. Collections — ArrayList, HashMap, HashSet
 

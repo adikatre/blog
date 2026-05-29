@@ -2,9 +2,12 @@
 title: 'CS113: Algorithms, OOP & Engineering Concepts'
 description: 'Searching, sorting, hashing, Big-O analysis, abstraction, inheritance, polymorphism, and design patterns across the bathroom, groups, and S3 modules.'
 pubDate: 'May 28 2026 10:00'
+heroImage: '../../assets/cs113-algorithms-oop.jpg'
 ---
 
 Data structures, algorithms, OOP, and software engineering concepts demonstrated across `bathroom/`, `S3uploads/`, `groups/`, and `chat/`.
+
+**Source:** [Pirna-spring](https://github.com/adikatre/Pirna-spring) (Spring backend) · [Pirna-pages](https://github.com/adikatre/Pirna-pages) (frontend)
 
 ## 1. Searching — Linear Search, DB Queries, Derived Finders
 

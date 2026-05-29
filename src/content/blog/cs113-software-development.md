@@ -2,9 +2,12 @@
 title: 'CS113: Software Development Practices'
 description: 'Version control, testing, build tooling, debugging, REST API design, and JPA across the bathroom, S3 uploads, groups, and chat modules.'
 pubDate: 'May 28 2026 09:00'
+heroImage: '../../assets/cs113-software-development.jpg'
 ---
 
 Software development concepts demonstrated across `bathroom/`, `S3uploads/`, `groups/`, and `chat/`.
+
+**Source:** [Pirna-spring](https://github.com/adikatre/Pirna-spring) (Spring backend) · [Pirna-pages](https://github.com/adikatre/Pirna-pages) (frontend)
 
 ## 1. Version Control — Git History and Commit Organization
 
