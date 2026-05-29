@@ -12,12 +12,23 @@ Data structures, algorithms, OOP, and software engineering concepts demonstrated
 
 **File:** `BathroomQueue.java:73-78`
 
-```java
-public int getStudentIndex(String studentName) {
-    if (this.peopleQueue == null || this.peopleQueue.isEmpty()) return -1;
+```java run
+// BathroomQueue.java:73-78 (distilled)
+import java.util.*;
 
-    List<String> students = Arrays.asList(this.peopleQueue.split(","));
-    return students.indexOf(studentName);   // O(n) linear scan
+public class Main {
+    static String peopleQueue = "alice,bob,carol";
+
+    static int getStudentIndex(String studentName) {
+        if (peopleQueue == null || peopleQueue.isEmpty()) return -1;
+        List<String> students = Arrays.asList(peopleQueue.split(","));
+        return students.indexOf(studentName);   // O(n) linear scan
+    }
+
+    public static void main(String[] args) {
+        System.out.println("index of bob:  " + getStudentIndex("bob"));
+        System.out.println("index of dave: " + getStudentIndex("dave"));
+    }
 }
 ```
 
@@ -53,18 +64,24 @@ List<Groups> searchByName(@Param("searchTerm") String searchTerm);
 
 **File:** `S3FileHandler.java:158-178`
 
-```java
-public List<String> listFiles(String prefix) {
-    ListObjectsV2Response listRes = s3Client.listObjectsV2(
-        ListObjectsV2Request.builder()
-            .bucket(bucketName)
-            .prefix(prefix)
-            .build());
+```java run
+// S3FileHandler.java:158-178 (distilled — the prefix scan itself)
+import java.util.*;
+import java.util.stream.*;
 
-    return listRes.contents()
-                  .stream()
-                  .map(s3Object -> s3Object.key())
-                  .collect(Collectors.toList());
+public class Main {
+    public static void main(String[] args) {
+        // Stand-in for the bucket's object keys.
+        List<String> allKeys = List.of(
+            "uid1/photo.png", "uid1/notes.txt", "uid2/photo.png");
+        String prefix = "uid1/";
+
+        List<String> matches = allKeys.stream()
+            .filter(key -> key.startsWith(prefix))
+            .collect(Collectors.toList());
+
+        System.out.println("keys under " + prefix + " -> " + matches);
+    }
 }
 ```
 
@@ -79,10 +96,25 @@ public List<String> listFiles(String prefix) {
 
 **File:** `GroupChatPresenceService.java:80-83`
 
-```java
-return participantCounts.keySet().stream()
-        .sorted(String::compareToIgnoreCase)
-        .collect(Collectors.toList());
+```java run
+// GroupChatPresenceService.java:80-83 (distilled)
+import java.util.*;
+import java.util.stream.*;
+
+public class Main {
+    public static void main(String[] args) {
+        Map<String, Integer> participantCounts = new LinkedHashMap<>();
+        participantCounts.put("Bob", 2);
+        participantCounts.put("alice", 5);
+        participantCounts.put("Carol", 1);
+
+        List<String> sorted = participantCounts.keySet().stream()
+                .sorted(String::compareToIgnoreCase)
+                .collect(Collectors.toList());
+
+        System.out.println(sorted);
+    }
+}
 ```
 
 * Uses a comparator method reference.
@@ -110,19 +142,32 @@ List<Groups>  findAllByOrderByNameAsc();
 
 **File:** `TinkleStatisticsService.java:40-47`
 
-```java
-Map<String, Long> averageWeeklyDurations = new HashMap<>();
+```java run
+// TinkleStatisticsService.java:40-47 (distilled)
+import java.util.*;
 
-for (Map.Entry<String, List<Long>> entry : userWeeklyDurations.entrySet()) {
-    long total = entry.getValue()
-                      .stream()
-                      .mapToLong(Long::longValue)
-                      .sum();
+public class Main {
+    public static void main(String[] args) {
+        Map<String, List<Long>> userWeeklyDurations = new HashMap<>();
+        userWeeklyDurations.put("alice", List.of(30L, 50L));
+        userWeeklyDurations.put("bob", List.of(45L, 20L, 25L));
 
-    averageWeeklyDurations.put(
-        entry.getKey(),
-        total / entry.getValue().size()
-    );
+        Map<String, Long> averageWeeklyDurations = new HashMap<>();
+
+        for (Map.Entry<String, List<Long>> entry : userWeeklyDurations.entrySet()) {
+            long total = entry.getValue()
+                              .stream()
+                              .mapToLong(Long::longValue)
+                              .sum();
+
+            averageWeeklyDurations.put(
+                entry.getKey(),
+                total / entry.getValue().size()   // hash-based O(1) put
+            );
+        }
+
+        System.out.println(averageWeeklyDurations);
+    }
 }
 ```
 
@@ -135,13 +180,22 @@ for (Map.Entry<String, List<Long>> entry : userWeeklyDurations.entrySet()) {
 
 **File:** `GroupChatPresenceService.java:23-24`
 
-```java
-private final ConcurrentMap<String, PresenceSession> sessions =
-        new ConcurrentHashMap<>();
+```java run
+// GroupChatPresenceService.java:23-24 (distilled — thread-safe counting)
+import java.util.concurrent.*;
 
-private final ConcurrentMap<Long,
-        ConcurrentMap<String, Integer>> participantCountsByGroup =
-        new ConcurrentHashMap<>();
+public class Main {
+    public static void main(String[] args) {
+        ConcurrentMap<String, Integer> participantCounts = new ConcurrentHashMap<>();
+
+        // merge() is an atomic read-modify-write — safe under concurrency.
+        participantCounts.merge("groupA", 1, Integer::sum);
+        participantCounts.merge("groupA", 1, Integer::sum);
+        participantCounts.merge("groupB", 1, Integer::sum);
+
+        System.out.println(participantCounts);   // {groupA=2, groupB=1}
+    }
+}
 ```
 
 * Thread-safe concurrent hashing.
@@ -153,9 +207,17 @@ private final ConcurrentMap<Long,
 
 **File:** `S3FileHandler.java:199-201`
 
-```java
-private String generateKey(String uid, String filename) {
-    return uid + "/" + filename;
+```java run
+// S3FileHandler.java:199-201 (distilled)
+public class Main {
+    static String generateKey(String uid, String filename) {
+        return uid + "/" + filename;
+    }
+
+    public static void main(String[] args) {
+        System.out.println(generateKey("uid42", "photo.png"));
+        System.out.println(generateKey("uid42", "notes.txt"));
+    }
 }
 ```
 
@@ -189,18 +251,31 @@ The chat write path is **O(n)** per message because `addMessage()` re-serializes
 
 **File:** `FileHandler.java:1-47`
 
-```java
-public interface FileHandler {
+```java run
+// FileHandler.java (distilled — abstraction in action)
+public class Main {
+    // The abstraction: controllers depend on this, not on a concrete store.
+    interface FileHandler {
+        String uploadFile(String base64Data, String filename, String uid);
+        boolean fileExists(String uid, String filename);
+    }
 
-    String uploadFile(String base64Data, String filename, String uid);
+    // One concrete implementation behind the interface.
+    static class LocalFileHandler implements FileHandler {
+        public String uploadFile(String base64Data, String filename, String uid) {
+            return "stored " + filename + " for " + uid
+                    + " (" + base64Data.length() + " chars)";
+        }
+        public boolean fileExists(String uid, String filename) {
+            return true;
+        }
+    }
 
-    String decodeFile(String uid, String filename);
-
-    boolean deleteFiles(String uid);
-
-    boolean fileExists(String uid, String filename);
-
-    java.util.List<String> listFiles(String prefix);
+    public static void main(String[] args) {
+        FileHandler handler = new LocalFileHandler();   // decoupled from impl
+        System.out.println(handler.uploadFile("aGVsbG8=", "note.txt", "uid1"));
+        System.out.println("exists? " + handler.fileExists("uid1", "note.txt"));
+    }
 }
 ```
 
@@ -241,16 +316,36 @@ public abstract class Submitter {
 
 **Files:** `BathroomQueue.java:27-32`, `53-110`
 
-```java
-private String peopleQueue;
-private int away;
-private int maxOccupancy = 1;
+```java run
+// BathroomQueue.java:27-110 (distilled — private state + invariant)
+public class Main {
+    static class BathroomQueue {
+        private String peopleQueue = "";
+        private int away = 0;
+        private int maxOccupancy = 1;
 
-public void addStudent(String studentName) { ... }
+        public void addStudent(String studentName) {
+            peopleQueue = peopleQueue.isEmpty() ? studentName : peopleQueue + "," + studentName;
+        }
 
-public void removeStudent(String studentName) { ... }
+        public void approveStudent() {
+            if (away < maxOccupancy) away++;   // invariant: away <= maxOccupancy
+        }
 
-public void approveStudent() { ... }
+        public int getAway() { return away; }
+    }
+
+    public static void main(String[] args) {
+        BathroomQueue q = new BathroomQueue();
+        q.addStudent("alice");
+        q.addStudent("bob");
+
+        q.approveStudent();
+        q.approveStudent();   // blocked — maxOccupancy already reached
+
+        System.out.println("away = " + q.getAway() + " (capped at maxOccupancy)");
+    }
+}
 ```
 
 * Internal state is hidden with `private`.
@@ -267,16 +362,32 @@ Example:
 
 **File:** `Groups.java:29-46`
 
-```java
-@Entity
-@Table(name = "groups")
-public class Groups extends Submitter {
+```java run
+// Groups.java:29-46 (distilled — inheritance without the JPA annotations)
+import java.util.*;
 
-    @ManyToMany(...)
-    @JoinTable(name = "group_members", ...)
-    private List<Person> groupMembers = new ArrayList<>();
+public class Main {
+    static abstract class Submitter {
+        Long id;
+        String describe() { return "Submitter#" + id; }
+    }
 
-    private String name, period, course;
+    static class Groups extends Submitter {
+        private List<String> groupMembers = new ArrayList<>();
+        private String name, period, course;
+
+        Groups(String name) { this.name = name; }
+        void addMember(String p) { groupMembers.add(p); }
+        @Override String describe() { return name + " " + groupMembers; }
+    }
+
+    public static void main(String[] args) {
+        Groups g = new Groups("Period 3 CS");
+        g.id = 7L;                       // field inherited from Submitter
+        g.addMember("alice");
+        g.addMember("bob");
+        System.out.println(g.describe());
+    }
 }
 ```
 
@@ -319,13 +430,31 @@ s3FileHandler.uploadFile(base64Data, MESSAGES_FILE, groupName);
 
 **File:** `Submitter.java:36-41`
 
-```java
-public List<Person> getMembers() {
+```java run
+// Submitter.java:36-41 (distilled — runtime dispatch)
+import java.util.*;
 
-    if (this instanceof Groups)
-        return ((Groups) this).getGroupMembers();
+public class Main {
+    static abstract class Submitter {
+        List<String> getMembers() {
+            if (this instanceof Groups)
+                return ((Groups) this).groupMembers;
+            return List.of(((Person) this).name);
+        }
+    }
+    static class Groups extends Submitter { List<String> groupMembers = new ArrayList<>(); }
+    static class Person extends Submitter { String name; Person(String n) { name = n; } }
 
-    return List.of((Person) this);
+    public static void main(String[] args) {
+        Groups g = new Groups();
+        g.groupMembers.addAll(List.of("alice", "bob"));
+
+        Submitter asGroup = g;                 // same static type...
+        Submitter asPerson = new Person("carol");
+
+        System.out.println("group  -> " + asGroup.getMembers());   // [alice, bob]
+        System.out.println("person -> " + asPerson.getMembers());  // [carol]
+    }
 }
 ```
 
@@ -402,10 +531,26 @@ Examples:
 
 ### Factory Pattern
 
-```java
-BathroomQueue.init()
-Tinkle.init(persons)
-Issue.init()
+```java run
+// BathroomQueue.init() (distilled — static factory method)
+public class Main {
+    static class BathroomQueue {
+        String teacherEmail;
+        String peopleQueue;
+
+        static BathroomQueue init() {                // factory
+            BathroomQueue q = new BathroomQueue();
+            q.teacherEmail = "default@school.edu";
+            q.peopleQueue = "";                      // preconfigured empty line
+            return q;
+        }
+    }
+
+    public static void main(String[] args) {
+        BathroomQueue q = BathroomQueue.init();
+        System.out.println("preconfigured queue for " + q.teacherEmail);
+    }
+}
 ```
 
 * Static methods generate preconfigured objects.
@@ -525,14 +670,25 @@ public class S3FileHandler implements FileHandler {
 
 **File:** `GroupChatService.java:81-83`
 
-```java
-} catch (Exception e) {
-    log.warn(
-        "Skipping invalid message line for group {}: {}",
-        groupName,
-        line,
-        e
-    );
+```java run
+// GroupChatService.java:81-83 (distilled — fault-tolerant parsing)
+import java.util.*;
+
+public class Main {
+    public static void main(String[] args) {
+        String[] lines = {"42", "not-a-number", "17"};   // one malformed line
+        List<Integer> parsed = new ArrayList<>();
+
+        for (String line : lines) {
+            try {
+                parsed.add(Integer.parseInt(line));
+            } catch (Exception e) {
+                System.out.println("Skipping invalid line: " + line);
+            }
+        }
+
+        System.out.println("parsed = " + parsed);   // [42, 17]
+    }
 }
 ```
 

@@ -96,38 +96,62 @@ This provides locations for:
 
 The `BathroomQueue` class is highly testable because queue logic is isolated into pure state-transition methods.
 
-```java
-// hypothetical src/test/java/.../bathroom/BathroomQueueTest.java
+```java run
+// Distilled from BathroomQueueTest — the queue + a tiny assert harness so the
+// same assertions run here without JUnit on the classpath.
+import java.util.*;
 
-@Test
-void addStudent_appendsToCommaSeparatedQueue() {
+public class Main {
+    // --- class under test (pure state-transition logic) ---
+    static class BathroomQueue {
+        private String peopleQueue;
+        private int away = 0;
+        private int maxOccupancy = 1;
+        BathroomQueue(String email, String queue) { this.peopleQueue = queue; }
+        void addStudent(String name) {
+            peopleQueue = (peopleQueue == null || peopleQueue.isEmpty())
+                ? name : peopleQueue + "," + name;
+        }
+        String getPeopleQueue() { return peopleQueue; }
+        String getFrontStudent() { return peopleQueue.split(",")[0]; }
+        int getStudentIndex(String name) {
+            return Arrays.asList(peopleQueue.split(",")).indexOf(name);
+        }
+        void setMaxOccupancy(int m) { maxOccupancy = m; }
+        void approveStudent() { if (away < maxOccupancy) away++; }
+        int getAway() { return away; }
+    }
 
-    BathroomQueue q = new BathroomQueue("t@x.com", "");
+    // --- minimal test harness ---
+    static int passed = 0, failed = 0;
+    static void assertEquals(Object expected, Object actual) {
+        if (Objects.equals(expected, actual)) { passed++; }
+        else { failed++; System.out.println("  FAIL: expected " + expected + " but got " + actual); }
+    }
 
-    q.addStudent("Alice");
-    q.addStudent("Bob");
+    static void addStudent_appendsToCommaSeparatedQueue() {
+        BathroomQueue q = new BathroomQueue("t@x.com", "");
+        q.addStudent("Alice");
+        q.addStudent("Bob");
+        assertEquals("Alice,Bob", q.getPeopleQueue());
+        assertEquals("Alice", q.getFrontStudent());   // FIFO peek
+        assertEquals(0, q.getStudentIndex("Alice"));   // search hit
+        assertEquals(-1, q.getStudentIndex("Zoe"));    // search miss
+    }
 
-    assertEquals("Alice,Bob", q.getPeopleQueue());
+    static void approveStudent_respectsMaxOccupancy() {
+        BathroomQueue q = new BathroomQueue("t@x.com", "Alice,Bob");
+        q.setMaxOccupancy(1);
+        q.approveStudent();
+        q.approveStudent();
+        assertEquals(1, q.getAway());                  // must not exceed max occupancy
+    }
 
-    assertEquals("Alice", q.getFrontStudent()); // FIFO peek
-
-    assertEquals(0, q.getStudentIndex("Alice")); // search hit
-
-    assertEquals(-1, q.getStudentIndex("Zoe")); // search miss
-}
-
-@Test
-void approveStudent_respectsMaxOccupancy() {
-
-    BathroomQueue q = new BathroomQueue("t@x.com", "Alice,Bob");
-
-    q.setMaxOccupancy(1);
-
-    q.approveStudent();
-    q.approveStudent();
-
-    // must not exceed max occupancy
-    assertEquals(1, q.getAway());
+    public static void main(String[] args) {
+        addStudent_appendsToCommaSeparatedQueue();
+        approveStudent_respectsMaxOccupancy();
+        System.out.println(passed + " passed, " + failed + " failed");
+    }
 }
 ```
 

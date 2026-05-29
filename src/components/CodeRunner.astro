@@ -1,0 +1,178 @@
+---
+// Progressively enhances every `pre.runnable` Java block (tagged ```java run in
+// markdown, see astro.config.mjs) with a Run button + output panel. Code is
+// compiled and run by Wandbox (https://wandbox.org) — free, no account, no API
+// key, and CORS-enabled, so it works directly from this static site.
+---
+
+<script>
+	const WANDBOX = 'https://wandbox.org/api/compile.json';
+	const COMPILER = 'openjdk-jdk-22+36';
+
+	// Wandbox writes the source to `prog.java`, so a top-level `public class Main`
+	// trips javac's "public class must match filename" rule. Dropping the
+	// `public` modifier keeps the displayed code idiomatic while letting Wandbox
+	// compile it and run whichever class declares `main`.
+	const forWandbox = (code: string) =>
+		code.replace(/\bpublic\s+(class\s+Main\b)/, '$1');
+
+	async function run(sourceCode: string) {
+		const res = await fetch(WANDBOX, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				code: forWandbox(sourceCode),
+				compiler: COMPILER,
+				stdin: '',
+			}),
+		});
+		if (!res.ok) throw new Error(`Wandbox request failed (HTTP ${res.status}).`);
+		return res.json();
+	}
+
+	function formatResult(d: any) {
+		const compileErr = (d.compiler_error || '').trim();
+		const stdout = d.program_output || '';
+		const stderr = (d.program_error || '').trim();
+
+		// Compile failure — the program never ran.
+		if (compileErr && !stdout && !stderr) {
+			return { kind: 'error', label: 'Compilation error', text: compileErr };
+		}
+		// Non-zero exit — runtime error (keep any output printed before the crash).
+		if (d.status !== '0') {
+			const text = [stdout && stdout.trim(), stderr || compileErr]
+				.filter(Boolean)
+				.join('\n')
+				.trim();
+			return { kind: 'error', label: 'Runtime error', text: text || `exited with status ${d.status}` };
+		}
+		const trailing = stderr ? `\n${stderr}` : '';
+		return { kind: 'ok', label: 'Output', text: (stdout + trailing).trim() || '(no output)' };
+	}
+
+	function enhance(pre: HTMLElement) {
+		const code = pre.querySelector('code');
+		if (!code) return;
+
+		const wrapper = document.createElement('div');
+		wrapper.className = 'code-runner';
+		pre.parentNode!.insertBefore(wrapper, pre);
+		wrapper.appendChild(pre);
+
+		const toolbar = document.createElement('div');
+		toolbar.className = 'code-runner-toolbar';
+
+		const button = document.createElement('button');
+		button.type = 'button';
+		button.className = 'code-runner-run';
+		button.textContent = '▶ Run';
+
+		const status = document.createElement('span');
+		status.className = 'code-runner-status';
+
+		toolbar.appendChild(button);
+		toolbar.appendChild(status);
+
+		const output = document.createElement('pre');
+		output.className = 'code-runner-output';
+		output.hidden = true;
+
+		wrapper.appendChild(toolbar);
+		wrapper.appendChild(output);
+
+		button.addEventListener('click', async () => {
+			button.disabled = true;
+			status.textContent = 'Running…';
+			output.hidden = false;
+			output.dataset.kind = 'running';
+			output.textContent = 'Compiling and running on Wandbox…';
+			try {
+				const data = await run(code.textContent ?? '');
+				const result = formatResult(data);
+				output.dataset.kind = result.kind;
+				output.textContent = result.text;
+				status.textContent = result.label;
+			} catch (err) {
+				output.dataset.kind = 'error';
+				output.textContent = err instanceof Error ? err.message : String(err);
+				status.textContent = 'Failed';
+			} finally {
+				button.disabled = false;
+			}
+		});
+	}
+
+	function init() {
+		document.querySelectorAll<HTMLElement>('pre.runnable').forEach(enhance);
+	}
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', init);
+	} else {
+		init();
+	}
+</script>
+
+<style is:global>
+	.code-runner {
+		margin: 1.25rem 0;
+	}
+	.code-runner > pre.runnable {
+		margin-bottom: 0;
+		border-bottom-left-radius: 0;
+		border-bottom-right-radius: 0;
+	}
+	.code-runner-toolbar {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		padding: 0.5rem 0.75rem;
+		border: 1px solid rgb(var(--gray-light));
+		border-top: none;
+		background: rgb(var(--gray-light), 0.4);
+	}
+	.code-runner-run {
+		font: inherit;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: white;
+		background: rgb(var(--black));
+		border: none;
+		border-radius: 8px;
+		padding: 0.4rem 0.9rem;
+		cursor: pointer;
+		transition: opacity 0.15s ease;
+	}
+	.code-runner-run:hover {
+		opacity: 0.88;
+	}
+	.code-runner-run:disabled {
+		opacity: 0.55;
+		cursor: progress;
+	}
+	.code-runner-status {
+		font-size: 0.8rem;
+		color: rgb(var(--gray));
+	}
+	.code-runner-output {
+		margin-top: 0;
+		border: 1px solid rgb(var(--gray-light));
+		border-top: none;
+		border-bottom-left-radius: 12px;
+		border-bottom-right-radius: 12px;
+		padding: 0.85rem 1rem;
+		font-size: 0.85rem;
+		white-space: pre-wrap;
+		word-break: break-word;
+		background: #1e1e1e;
+		color: #e6e6e6;
+	}
+	.code-runner-output[data-kind='running'] {
+		color: rgb(var(--gray));
+		background: rgb(var(--gray-light), 0.4);
+	}
+	.code-runner-output[data-kind='error'] {
+		background: #2a1416;
+		color: #ffb4b4;
+	}
+</style>
