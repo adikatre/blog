@@ -1,7 +1,7 @@
 ---
 title: 'CS113: Software Development Practices'
 description: 'Version control, testing, build tooling, debugging, REST API design, and JPA across the bathroom, S3 uploads, groups, and chat modules.'
-pubDate: 'May 28 2026 09:00'
+pubDate: 'May 28 2026 11:00'
 heroImage: '../../assets/cs113-software-development.jpg'
 ---
 
@@ -9,7 +9,25 @@ Software development concepts demonstrated across `bathroom/`, `S3uploads/`, `gr
 
 **Source:** [Pirna-spring](https://github.com/adikatre/Pirna-spring) (Spring backend) · [Pirna-pages](https://github.com/adikatre/Pirna-pages) (frontend)
 
-## 1. Version Control — Git History and Commit Organization
+## Course alignment
+
+| Learning Objective | Evidence Required | Assessment Method |
+| --- | --- | --- |
+| Version Control | Use Git for branching, committing, pull requests, code reviews | GitHub: Commit history, PR descriptions, branch strategy |
+| Testing | Write unit tests, integration tests, API tests | Code review: JUnit tests, Postman collections |
+| Build Tools | Use Maven/Gradle for dependency management and builds | Code review: pom.xml/build.gradle configuration |
+| Debugging | Use IDE debugger, logging, breakpoints to troubleshoot issues | Documentation: Debug process in blog, console logging |
+| API Development | Design RESTful APIs with proper HTTP methods and status codes | Code review: Controller endpoints, ResponseEntity usage |
+| Database Integration | Implement JPA/Hibernate with proper relationships (OneToMany, ManyToMany) | Code review: Entity models, repository interfaces, SQL queries |
+
+---
+
+## Software Development
+
+### Version Control
+
+*Evidence required — Use Git for branching, committing, pull requests, code reviews.*  
+*Assessment — GitHub: Commit history, PR descriptions, branch strategy.*
 
 Running `git log --oneline` scoped to these directories shows a clean feature timeline with focused commits.
 
@@ -27,77 +45,34 @@ fa760c31 Adding documentation on Hall Pass Controller API File
 9bbf9b1d Logic for bathroom pass finally works!
 ```
 
-### Version Control Practices Demonstrated
-
-#### Feature Branch Workflow
+**Feature branch workflow.** Merge commits show feature branches integrating through pull requests with upstream synchronization, for example:
 
 ```text
 7cb0f03d Merge branch 'Open-Coding-Society:master' into master
 ```
 
-This demonstrates:
+This pattern demonstrates feature branch development, pull request merges, and upstream synchronization workflows.
 
-* feature branch development
-* pull request merges
-* upstream synchronization workflows
+**Separation of concerns in commits.** Documentation commits are isolated from logic changes — a commit like `Adding documentation on Bathroom Queue API File` carries no code edits. Keeping documentation, schema, and logic in separate commits yields cleaner code reviews, easier rollback, and reduced merge conflicts.
 
-#### Separation of Concerns in Commits
+**Isolated schema changes.** Schema modifications are separated into dedicated commits such as `Updating group message schema` so reviewers can identify database migration risks independently.
 
-Documentation commits are isolated from logic changes:
-
-```text
-Adding documentation on Bathroom Queue API File
-```
-
-Benefits:
-
-* cleaner code reviews
-* easier rollback
-* reduced merge conflicts
-
-#### Isolated Schema Changes
-
-```text
-Updating group message schema
-```
-
-Schema modifications are separated into dedicated commits so reviewers can identify database migration risks independently.
-
-#### File-Level Git History
-
-Example command:
+**File-level git history.** Scoping the log to a single file enables line-by-line blame analysis, code review history, contributor tracking, and regression debugging:
 
 ```bash
 git log -p src/main/java/com/open/spring/mvc/groups/GroupChatService.java
 ```
 
-This enables:
-
-* line-by-line blame analysis
-* code review history
-* contributor tracking
-* regression debugging
-
 ---
 
-## 2. Testing — JUnit, Integration Testing, and API Validation
+### Testing
 
-The project test structure mirrors the production structure under:
+*Evidence required — Write unit tests, integration tests, API tests.*  
+*Assessment — Code review: JUnit tests, Postman collections.*
 
-```text
-src/test/java/com/open/spring/mvc/chat/
-```
+The project test structure mirrors the production structure under `src/test/java/com/open/spring/mvc/chat/`, providing locations for unit tests, service tests, controller tests, and integration tests.
 
-This provides locations for:
-
-* unit tests
-* service tests
-* controller tests
-* integration tests
-
-### Example Unit Tests — `BathroomQueue`
-
-The `BathroomQueue` class is highly testable because queue logic is isolated into pure state-transition methods.
+**Example unit tests — `BathroomQueue`.** The `BathroomQueue` class is highly testable because queue logic is isolated into pure state-transition methods.
 
 ```java run
 // Distilled from BathroomQueueTest — the queue + a tiny assert harness so the
@@ -158,15 +133,7 @@ public class Main {
 }
 ```
 
-### API / Integration Testing
-
-Controllers consistently return `ResponseEntity`, making them easy to validate using:
-
-* Postman
-* MockMvc
-* integration tests
-
-Example:
+**API / integration testing.** Controllers consistently return `ResponseEntity`, making them easy to validate using Postman, MockMvc, or integration tests. For example, the add-queue endpoint distinguishes a successful creation from a conflict:
 
 ```java
 // BathroomQueueApiController.java:103-115
@@ -188,25 +155,9 @@ repository.save(
 return ResponseEntity.ok("Queue added successfully!");
 ```
 
-### Example API Assertions
+**Example API assertions.** The first `POST /api/bathroom/addQueue` returns `200 OK`, while a duplicate `POST /api/bathroom/addQueue` returns `409 CONFLICT`.
 
-#### First Request
-
-```text
-POST /api/bathroom/addQueue
-→ 200 OK
-```
-
-#### Duplicate Queue
-
-```text
-POST /api/bathroom/addQueue
-→ 409 CONFLICT
-```
-
-### Maven Test Stack
-
-`pom.xml` includes:
+**Maven test stack.** `pom.xml` includes the Spring Boot test starter, which brings in JUnit 5, MockMvc, AssertJ, and Spring test utilities:
 
 ```xml
 <dependency>
@@ -214,32 +165,18 @@ POST /api/bathroom/addQueue
 </dependency>
 ```
 
-This provides:
-
-* JUnit 5
-* MockMvc
-* AssertJ
-* Spring test utilities
-
-Run tests with:
-
-```bash
-mvn test
-```
+Run tests with `mvn test`.
 
 ---
 
-## 3. Build Tools — Maven and Dependency Management
+### Build Tools
+
+*Evidence required — Use Maven/Gradle for dependency management and builds.*  
+*Assessment — Code review: pom.xml/build.gradle configuration.*
 
 The project uses Maven for dependency management and application builds.
 
-### Spring Web
-
-Used for REST controllers such as:
-
-* `BathroomQueueApiController`
-* `GroupsApiController`
-* `S3FileApiController`
+**Spring Web.** Used for REST controllers such as `BathroomQueueApiController`, `GroupsApiController`, and `S3FileApiController`:
 
 ```xml
 <dependency>
@@ -247,12 +184,7 @@ Used for REST controllers such as:
 </dependency>
 ```
 
-### WebSocket Support
-
-Used by:
-
-* `GroupChatWebSocketController`
-* `WebSocketBrokerConfig`
+**WebSocket support.** Used by `GroupChatWebSocketController` and `WebSocketBrokerConfig`:
 
 ```xml
 <dependency>
@@ -260,13 +192,7 @@ Used by:
 </dependency>
 ```
 
-### JPA / Hibernate
-
-Used by repositories such as:
-
-* `BathroomQueueJPARepository`
-* `GroupsJpaRepository`
-* `TeacherJpaRepository`
+**JPA / Hibernate.** Used by repositories such as `BathroomQueueJPARepository`, `GroupsJpaRepository`, and `TeacherJpaRepository`:
 
 ```xml
 <dependency>
@@ -274,9 +200,7 @@ Used by repositories such as:
 </dependency>
 ```
 
-### AWS SDK v2
-
-Used by `S3FileHandler`.
+**AWS SDK v2.** Used by `S3FileHandler`:
 
 ```xml
 <dependency>
@@ -285,9 +209,7 @@ Used by `S3FileHandler`.
 </dependency>
 ```
 
-### Swagger / OpenAPI
-
-Supports API documentation annotations.
+**Swagger / OpenAPI.** Supports API documentation annotations:
 
 ```xml
 <dependency>
@@ -295,7 +217,7 @@ Supports API documentation annotations.
 </dependency>
 ```
 
-### Testing Dependencies
+**Testing dependencies.** The test starter underpins the JUnit/MockMvc stack:
 
 ```xml
 <dependency>
@@ -303,27 +225,18 @@ Supports API documentation annotations.
 </dependency>
 ```
 
-### Maven Commands
-
-#### Start Application
-
-```bash
-mvn spring-boot:run
-```
-
-#### Run Tests
-
-```bash
-mvn test
-```
+**Maven commands.** Start the application with `mvn spring-boot:run` and run the test suite with `mvn test`.
 
 ---
 
-## 4. Debugging — Logging, Breakpoints, and Exception Tracing
+### Debugging
+
+*Evidence required — Use IDE debugger, logging, breakpoints to troubleshoot issues.*  
+*Assessment — Documentation: Debug process in blog, console logging.*
 
 The project uses Lombok's `@Slf4j` for structured logging.
 
-### S3 Upload Debugging
+**S3 upload debugging.** Logging plus a `null`-client guard gives a clear breakpoint target when uploads fail:
 
 ```java
 @Slf4j
@@ -361,9 +274,7 @@ public class S3FileHandler implements FileHandler {
 }
 ```
 
-### Localized Failure Handling
-
-`GroupChatService` isolates malformed JSONL rows instead of failing the entire conversation.
+**Localized failure handling.** `GroupChatService` isolates malformed JSONL rows instead of failing the entire conversation:
 
 ```java
 } catch (Exception e) {
@@ -376,7 +287,7 @@ public class S3FileHandler implements FileHandler {
 }
 ```
 
-### Parse Failure Diagnostics
+**Parse failure diagnostics.** A targeted catch surfaces the offending value when time parsing fails:
 
 ```java
 } catch (Exception e) {
@@ -384,31 +295,16 @@ public class S3FileHandler implements FileHandler {
 }
 ```
 
-### Example IDE Debugging Workflow
-
-1. Place breakpoint at:
-
-```text
-BathroomQueue.java:127
-```
-
-2. Send request:
-
-```text
-POST /api/bathroom/approveQueue
-```
-
-3. Step through:
-
-* `away`
-* `maxOccupancy`
-* queue invariants
+**Example IDE debugging workflow.** Place a breakpoint at `BathroomQueue.java:127`, send a `POST /api/bathroom/approveQueue` request, then step through `away`, `maxOccupancy`, and the queue invariants.
 
 ---
 
-## 5. API Development — RESTful Endpoints and HTTP Semantics
+### API Development
 
-### Bathroom Queue API
+*Evidence required — Design RESTful APIs with proper HTTP methods and status codes.*  
+*Assessment — Code review: Controller endpoints, ResponseEntity usage.*
+
+**Bathroom Queue API.** The controller pairs each endpoint with explicit status codes — `200 OK`, `409 CONFLICT`, and `500 INTERNAL_SERVER_ERROR`:
 
 ```java
 @RestController
@@ -449,15 +345,7 @@ public class BathroomQueueApiController {
 }
 ```
 
-### Status Codes Used
-
-* `200 OK`
-* `409 CONFLICT`
-* `500 INTERNAL_SERVER_ERROR`
-
----
-
-### S3 File API
+**S3 File API.** A single resource exposes create, read, and delete via the matching HTTP verbs:
 
 ```java
 @RestController
@@ -472,16 +360,9 @@ public class S3FileApiController {
 }
 ```
 
-### Response Semantics
+Its response semantics map cleanly to HTTP: `200 OK` for a successful upload or download, `404 NOT_FOUND` for a missing file, `400 BAD_REQUEST` for invalid input, and `500 INTERNAL_SERVER_ERROR` for backend failures.
 
-* `200 OK` → successful upload/download
-* `404 NOT_FOUND` → missing file
-* `400 BAD_REQUEST` → invalid input
-* `500 INTERNAL_SERVER_ERROR` → backend failure
-
----
-
-### Groups CRUD API
+**Groups CRUD API.** The groups controller wraps results in `ResponseEntity` and returns `500` on failure:
 
 ```java
 @RestController
@@ -510,9 +391,7 @@ public class GroupsApiController {
 }
 ```
 
----
-
-### Nested Group Chat Resources
+**Nested group chat resources.** Chat endpoints are nested under the groups namespace and return `404 NOT_FOUND` when resources are missing:
 
 ```java
 @RestController
@@ -526,21 +405,14 @@ public class GroupChatApiController {
 }
 ```
 
-Uses proper REST semantics such as:
-
-```text
-404 NOT_FOUND
-```
-
-when resources are missing.
-
 ---
 
-## 6. Database Integration — JPA, Hibernate, and Query Design
+### Database Integration
 
-### `@OneToOne` Relationship
+*Evidence required — Implement JPA/Hibernate with proper relationships (OneToMany, ManyToMany).*  
+*Assessment — Code review: Entity models, repository interfaces, SQL queries.*
 
-`Tinkle ↔ Person`
+**`@OneToOne` relationship (`Tinkle ↔ Person`).** A one-to-one link with cascading delete:
 
 ```java
 @OneToOne
@@ -550,11 +422,7 @@ when resources are missing.
 private Person person;
 ```
 
----
-
-### `@ManyToMany` Relationship
-
-`Groups ↔ Person`
+**`@ManyToMany` relationship (`Groups ↔ Person`).** Membership is modeled through a join table with lazy fetching:
 
 ```java
 @ManyToMany(
@@ -578,11 +446,7 @@ private List<Person> groupMembers =
         new ArrayList<>();
 ```
 
----
-
-### `@OneToMany` with Orphan Removal
-
-`Submitter ↔ AssignmentSubmission`
+**`@OneToMany` with orphan removal (`Submitter ↔ AssignmentSubmission`).** Removing a submission from the collection deletes the row:
 
 ```java
 @OneToMany(
@@ -596,9 +460,7 @@ private List<Person> groupMembers =
 private List<AssignmentSubmission> submissions;
 ```
 
----
-
-### Polymorphic Persistence with `@Inheritance`
+**Polymorphic persistence with `@Inheritance`.** A joined-table hierarchy lets both `Person` and `Groups` act as submitters:
 
 ```java
 @Entity
@@ -618,9 +480,7 @@ private List<AssignmentSubmission> submissions;
 public abstract class Submitter { ... }
 ```
 
----
-
-### Repository Queries
+**Repository queries.** `GroupsJpaRepository` demonstrates derived queries, JPQL, `JOIN FETCH`, native SQL, case-insensitive search, and relationship traversal:
 
 ```java
 public interface GroupsJpaRepository
@@ -670,18 +530,7 @@ public interface GroupsJpaRepository
 }
 ```
 
-### Features Demonstrated
-
-* derived queries
-* JPQL
-* JOIN FETCH
-* native SQL
-* case-insensitive search
-* relationship traversal
-
----
-
-### Bulk Modification Queries
+**Bulk modification queries.** `BathroomQueueJPARepository` adds a derived lookup and a transactional bulk delete:
 
 ```java
 public interface BathroomQueueJPARepository
@@ -698,9 +547,7 @@ public interface BathroomQueueJPARepository
 }
 ```
 
----
-
-### JSON Column Mapping
+**JSON column mapping.** Hibernate persists a nested map directly into a JSON column:
 
 ```java
 @JdbcTypeCode(SqlTypes.JSON)
@@ -711,9 +558,7 @@ private Map<String, Map<String, Object>> stats =
         new HashMap<>();
 ```
 
----
-
-### Transactional Lazy Loading
+**Transactional lazy loading.** `@Transactional(readOnly = true)` keeps the session open so lazy collections resolve during serialization:
 
 ```java
 @GetMapping
@@ -721,14 +566,4 @@ private Map<String, Map<String, Object>> stats =
 public ResponseEntity<List<Map<String, Object>>> getAllGroups() { ... }
 ```
 
----
-
-## Relationship Types Covered
-
-This project demonstrates all major relationship types required by the rubric:
-
-* `@OneToOne`
-* `@OneToMany`
-* `@ManyToMany`
-* `@Inheritance`
-* JSON column persistence
+Together these snippets cover all major relationship types required by the rubric — `@OneToOne`, `@OneToMany`, `@ManyToMany`, `@Inheritance`, and JSON column persistence.

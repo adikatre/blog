@@ -9,11 +9,25 @@ Deployment concepts demonstrated across `bathroom/`, `S3uploads/`, and `groups/c
 
 **Source:** [Pirna-spring](https://github.com/adikatre/Pirna-spring) (Spring backend) · [Pirna-pages](https://github.com/adikatre/Pirna-pages) (frontend)
 
-## 1. Docker — `Dockerfile` and `docker-compose.yml`
+## Course alignment
 
-### Dockerfile
+| Learning Objective | Evidence Required | Assessment Method |
+| --- | --- | --- |
+| Docker | Create Dockerfile and docker-compose for containerization | Code review: Dockerfile, docker-compose.yml configuration |
+| DNS Configuration | Configure custom domain with proper DNS records | Deployment review: Live site accessible via custom domain |
+| nginx | Set up nginx as reverse proxy for backend services | Code review: nginx.conf configuration |
+| CI/CD | Implement automated deployment pipeline | GitHub Actions: Workflow files, successful deployments |
 
-The project uses a minimal Docker image that builds the Spring Boot JAR inside the container and exposes both REST and WebSocket ports.
+---
+
+## Deployment
+
+### Docker
+
+*Evidence required — Create Dockerfile and docker-compose for containerization.*  
+*Assessment — Code review: Dockerfile, docker-compose.yml configuration.*
+
+**Dockerfile.** The project uses a minimal Docker image that builds the Spring Boot JAR inside the container and exposes both REST and WebSocket ports.
 
 ```dockerfile
 ## syntax=docker/dockerfile:1
@@ -36,57 +50,17 @@ EXPOSE 8585
 EXPOSE 8589
 ```
 
-### Port Usage
+**Port usage.** `EXPOSE 8585` is used by `BathroomQueueApiController`, `HallPassController`, `S3FileApiController`, and the REST endpoints in `GroupChatApiController`. `EXPOSE 8589` is a dedicated WebSocket port configured by `ChatWebSocketPortConfig.java` and `ChatWebSocketPortFilter.java`, and it carries STOMP/SockJS traffic for `GroupChatWebSocketController` along with presence updates in `GroupChatPresenceService`.
 
-#### `EXPOSE 8585`
-
-Used by:
-
-* `BathroomQueueApiController`
-* `HallPassController`
-* `S3FileApiController`
-* REST endpoints in `GroupChatApiController`
-
-#### `EXPOSE 8589`
-
-Dedicated WebSocket port configured by:
-
-* `ChatWebSocketPortConfig.java`
-* `ChatWebSocketPortFilter.java`
-
-Used for:
-
-* STOMP/SockJS traffic
-* `GroupChatWebSocketController`
-* presence updates in `GroupChatPresenceService`
-
-### Maven Build Inside Docker
+**Maven build inside Docker.** The image compiles everything into a runnable Spring Boot JAR during the build step:
 
 ```dockerfile
 RUN ./mvnw package
 ```
 
-Compiles:
+This compiles the JPA repositories, REST controllers, WebSocket handlers, service layers, and Hibernate entities into a single runnable artifact. The image intentionally remains minimal, with no `HEALTHCHECK`, no `VOLUME`, and no `ARG`.
 
-* JPA repositories
-* REST controllers
-* WebSocket handlers
-* service layers
-* Hibernate entities
-
-into a runnable Spring Boot JAR.
-
-### Image Characteristics
-
-The image intentionally remains minimal:
-
-* no `HEALTHCHECK`
-* no `VOLUME`
-* no `ARG`
-
----
-
-### `docker-compose.yml`
+**docker-compose.yml.** The compose file builds the image and maps both ports plus a persistent volume.
 
 ```yaml
 version: '3'
@@ -106,73 +80,22 @@ services:
     restart: unless-stopped
 ```
 
-### Compose Networking
+**Compose networking.** The `8585:8585` mapping exposes the bathroom REST APIs, S3 upload/download APIs, and groups REST APIs, while `8589:8589` exposes WebSocket traffic, STOMP/SockJS connections, and live chat presence updates.
 
-#### `8585:8585`
+**Persistent volume mapping.** The `./volumes:/app/volumes` mapping provides persistence for local fallback uploads, cached file storage, and `FileHandler` disk-backed operations across container restarts.
 
-Exposes:
-
-* bathroom REST APIs
-* S3 upload/download APIs
-* groups REST APIs
-
-#### `8589:8589`
-
-Exposes:
-
-* WebSocket traffic
-* STOMP/SockJS connections
-* live chat presence updates
-
-### Persistent Volume Mapping
-
-```yaml
-./volumes:/app/volumes
-```
-
-Provides persistence for:
-
-* local fallback uploads
-* cached file storage
-* `FileHandler` disk-backed operations
-
-across container restarts.
-
-### Environment Variables
-
-No `environment:` block exists in the compose file. Instead, configuration lives in a `.env` file at the project root, which is **gitignored** so credentials never reach the repository.
-
-Values such as:
-
-* `AWS_ACCESS_KEY_ID`
-* `AWS_SECRET_ACCESS_KEY`
-* `AWS_REGION`
-* `AWS_S3_BUCKET`
-
-are loaded from that gitignored `.env` file, and can also be supplied through:
-
-* host environment variables
-* CI/CD secrets
-* container runtime injection
-
-They are consumed by `S3FileHandler` via `@Value`.
+**Environment variables.** No `environment:` block exists in the compose file. Instead, configuration lives in a `.env` file at the project root, which is **gitignored** so credentials never reach the repository. Values such as `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`, and `AWS_S3_BUCKET` are loaded from that gitignored `.env` file, and can also be supplied through host environment variables, CI/CD secrets, or container runtime injection. They are consumed by `S3FileHandler` via `@Value`.
 
 ---
 
-## 2. DNS Configuration
+### DNS Configuration
 
-DNS is managed through **AWS Route 53**, with **S3** backing the static-hosting side of the deployment:
+*Evidence required — Configure custom domain with proper DNS records.*  
+*Assessment — Deployment review: Live site accessible via custom domain.*
 
-* a Route 53 hosted zone resolves `opencodingsociety.com` and its subdomains
-* S3 bucket configuration serves/stores the static content and uploads
+DNS is managed through **AWS Route 53**, with **S3** backing the static-hosting side of the deployment: a Route 53 hosted zone resolves `opencodingsociety.com` and its subdomains, and S3 bucket configuration serves/stores the static content and uploads. These are configured in the AWS console rather than committed as infrastructure files, so the repository itself contains no Terraform, Kubernetes ingress, or static DNS manifests — the topology below reflects the live Route 53 + S3 setup.
 
-These are configured in the AWS console rather than committed as infrastructure files, so the repository itself contains no Terraform, Kubernetes ingress, or static DNS manifests — the topology below reflects the live Route 53 + S3 setup.
-
----
-
-### Production Hostnames
-
-`README.md`
+**Production hostnames.** The hostnames are documented in `README.md`:
 
 ```text
 - Runtime link: https://spring.opencodingsociety.com/
@@ -180,30 +103,9 @@ These are configured in the AWS console rather than committed as infrastructure 
 - JWT Login:     https://pages.opencodingsociety.com/login
 ```
 
-### Domain Responsibilities
+**Domain responsibilities.** `spring.opencodingsociety.com` hosts the Spring backend (bathroom APIs, groups APIs, S3 APIs, and WebSocket endpoints), while `pages.opencodingsociety.com` hosts the frontend (the GitHub Pages site, the browser SPA, and the frontend authentication flow).
 
-#### `spring.opencodingsociety.com`
-
-Hosts the Spring backend:
-
-* bathroom APIs
-* groups APIs
-* S3 APIs
-* WebSocket endpoints
-
-#### `pages.opencodingsociety.com`
-
-Hosts the frontend:
-
-* GitHub Pages site
-* browser SPA
-* frontend authentication flow
-
----
-
-### Cross-Origin Configuration
-
-#### Bathroom Queue API
+**Cross-origin configuration.** The Bathroom Queue API explicitly allows local frontend development and production frontend access:
 
 ```java
 @CrossOrigin(origins = {
@@ -212,14 +114,7 @@ Hosts the frontend:
 })
 ```
 
-Allows:
-
-* local frontend development
-* production frontend access
-
----
-
-#### S3 File API
+The S3 File API has no local `@CrossOrigin` annotation, so it inherits the global CORS configuration:
 
 ```java
 @RestController
@@ -227,11 +122,7 @@ Allows:
 public class S3FileApiController { ... }
 ```
 
-No local `@CrossOrigin` annotation exists, so it inherits global CORS configuration.
-
----
-
-#### Group Chat API
+The Group Chat API likewise relies on the global CORS rules:
 
 ```java
 @RestController
@@ -239,26 +130,15 @@ No local `@CrossOrigin` annotation exists, so it inherits global CORS configurat
 @CrossOrigin
 ```
 
-Uses global CORS rules as well.
-
----
-
-### JWT Cookie Domain Sharing
+**JWT cookie domain sharing.** Setting the cookie domain to the parent zone enables authentication sharing across subdomains:
 
 ```java
 cookieBuilder.domain(".opencodingsociety.com");
 ```
 
-This enables authentication sharing across:
+This lets browser sessions authenticate API calls across both `spring.opencodingsociety.com` and `pages.opencodingsociety.com`.
 
-* `spring.opencodingsociety.com`
-* `pages.opencodingsociety.com`
-
-so browser sessions can authenticate API calls across subdomains.
-
----
-
-### DNS Topology Summary
+**DNS topology summary.** The overall topology is:
 
 ```text
 opencodingsociety.com
@@ -266,22 +146,18 @@ opencodingsociety.com
 └── pages.opencodingsociety.com   -> GitHub Pages frontend
 ```
 
-The topology is encoded through:
-
-* CORS rules
-* JWT cookie domain settings
-* nginx routing
-* frontend API calls
+This topology is encoded through CORS rules, JWT cookie domain settings, nginx routing, and frontend API calls.
 
 ---
 
-## 3. nginx — `nginx_spring_8585_8589.conf`
+### nginx
 
-The repository contains a single nginx configuration file with approximately 315 lines.
+*Evidence required — Set up nginx as reverse proxy for backend services.*  
+*Assessment — Code review: nginx.conf configuration.*
 
----
+The repository contains a single nginx configuration file (`nginx_spring_8585_8589.conf`) with approximately 315 lines.
 
-### Server Name and Upload Limits
+**Server name and upload limits.** The server block names the backend host and caps upload sizes:
 
 ```nginx
 server_name spring.opencodingsociety.com;
@@ -289,25 +165,13 @@ server_name spring.opencodingsociety.com;
 client_max_body_size 50M;
 ```
 
-### Upload Limit Behavior
-
-`client_max_body_size 50M` sets the maximum upload size for:
-
-* multipart uploads
-* base64 payloads
-* S3 upload requests
-
-Anything larger receives:
+`client_max_body_size 50M` sets the maximum upload size for multipart uploads, base64 payloads, and S3 upload requests. Anything larger receives a `413 Payload Too Large` before reaching `S3FileHandler`:
 
 ```text
 413 Payload Too Large
 ```
 
-before reaching `S3FileHandler`.
-
----
-
-### REST Proxy Routing
+**REST proxy routing.** All REST traffic routes through port `8585`:
 
 ```nginx
 location / {
@@ -323,31 +187,9 @@ location / {
 }
 ```
 
-All REST traffic routes through port `8585`, including:
+This covers `/api/bathroom/**`, `/api/files/**`, and `/api/groups/**`. The forwarded `X-Forwarded-*` headers preserve the real client IP, original protocol, host identity, and upstream request metadata, which matters for audit logging, authentication, analytics, and rate limiting.
 
-* `/api/bathroom/**`
-* `/api/files/**`
-* `/api/groups/**`
-
-### Forwarded Headers
-
-`X-Forwarded-*` headers preserve:
-
-* real client IP
-* original protocol
-* host identity
-* upstream request metadata
-
-This is important for:
-
-* audit logging
-* authentication
-* analytics
-* rate limiting
-
----
-
-### Dedicated WebSocket Proxy
+**Dedicated WebSocket proxy.** A separate location upgrades and proxies WebSocket traffic to port `8589`:
 
 ```nginx
 location /ws-chat {
@@ -370,48 +212,27 @@ location /ws-chat {
 }
 ```
 
-### WebSocket Features Enabled
-
-#### Upgrade Headers
+**WebSocket features enabled.** The upgrade headers enable WebSocket handshakes, STOMP upgrades, and SockJS communication:
 
 ```nginx
 proxy_set_header Upgrade $http_upgrade;
 proxy_set_header Connection "Upgrade";
 ```
 
-Enable:
-
-* WebSocket handshakes
-* STOMP upgrades
-* SockJS communication
-
-#### Long-Lived Connections
+The long timeouts keep idle chat sessions, presence tracking, and persistent subscriptions alive:
 
 ```nginx
 proxy_read_timeout 86400;
 proxy_send_timeout 86400;
 ```
 
-Allow:
-
-* idle chat sessions
-* presence tracking
-* persistent subscriptions
-
-#### Disabled Proxy Buffering
+Disabling proxy buffering improves low-latency message delivery and real-time event propagation:
 
 ```nginx
 proxy_buffering off;
 ```
 
-Improves:
-
-* low-latency message delivery
-* real-time event propagation
-
----
-
-### TLS Termination
+**TLS termination.** nginx listens on 443 with certificates from Let's Encrypt:
 
 ```nginx
 listen [::]:443 ssl;
@@ -424,26 +245,13 @@ include /etc/letsencrypt/options-ssl-nginx.conf;
 ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem;
 ```
 
-### HTTPS Responsibilities
-
-nginx terminates TLS for:
-
-* bathroom APIs
-* groups APIs
-* S3 uploads
-* WebSocket traffic
-
-Backend ports `8585` and `8589` remain internal and unencrypted.
-
-Certificates are managed using:
+nginx terminates TLS for the bathroom APIs, groups APIs, S3 uploads, and WebSocket traffic, while backend ports `8585` and `8589` remain internal and unencrypted. Certificates are managed using:
 
 ```text
 Let's Encrypt
 ```
 
----
-
-### HTTP → HTTPS Redirect
+**HTTP → HTTPS redirect.** A dedicated port-80 server block forces every request to HTTPS:
 
 ```nginx
 server {
@@ -461,18 +269,16 @@ server {
 }
 ```
 
-Guarantees that:
-
-* authentication traffic
-* JWT cookies
-* upload payloads
-* bathroom queue actions
-
-never travel over plaintext HTTP.
+This guarantees that authentication traffic, JWT cookies, upload payloads, and bathroom queue actions never travel over plaintext HTTP.
 
 ---
 
-## 4. CI/CD — GitHub Actions
+### CI/CD
+
+*Evidence required — Implement automated deployment pipeline.*  
+*Assessment — GitHub Actions: Workflow files, successful deployments.*
+
+**What's automated vs. manual:** Today, CI/CD automates only the **Jekyll frontend** (`pages.opencodingsociety.com`). The Spring **backend** (`spring.opencodingsociety.com`) is still deployed by hand; the "Minimal Backend CI/CD Pipeline Recommendation" below is a proposed future workflow, not something that currently runs.
 
 The frontend (`pages.opencodingsociety.com`, a Jekyll site) is built and deployed automatically by a GitHub Actions workflow under `.github/workflows/`. On every push to `main` — and on manual `workflow_dispatch` — it:
 
@@ -577,39 +383,24 @@ jobs:
         uses: actions/deploy-pages@v5
 ```
 
----
-
-## Minimal Backend CI/CD Pipeline Recommendation
-
-The Spring backend (`spring.opencodingsociety.com`) is still deployed by hand. A minimal GitHub Actions workflow for the backend could:
-
-1. Install Java 21
+**Minimal Backend CI/CD Pipeline Recommendation (proposed, not yet implemented).** The Spring backend (`spring.opencodingsociety.com`) is still deployed by hand. A minimal GitHub Actions workflow for the backend *could* (this does not exist yet) install Java 21:
 
 ```yaml
 setup-java@v4
 ```
 
-2. Build and test the application
+build and test the application:
 
 ```bash
 mvn -B package
 mvn test
 ```
 
-3. Build and push Docker image
+build and push the Docker image:
 
 ```bash
 docker build .
 docker push
 ```
 
-4. SSH into the production host
-
-5. Restart containers behind nginx
-
-This would automate deployment for all:
-
-* REST controllers
-* WebSocket services
-* JPA repositories
-* S3 integrations
+then SSH into the production host and restart the containers behind nginx. This would automate deployment for all REST controllers, WebSocket services, JPA repositories, and S3 integrations.

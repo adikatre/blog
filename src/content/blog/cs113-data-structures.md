@@ -1,7 +1,7 @@
 ---
 title: 'CS113: Java Data Structures in Practice'
 description: 'Collections, lists, FIFO queues, trees, sets, maps, and graphs — concrete uses across the bathroom queue, group chat, and presence-tracking code.'
-pubDate: 'May 28 2026 11:00'
+pubDate: 'May 28 2026 09:00'
 heroImage: '../../assets/cs113-data-structures.jpg'
 ---
 
@@ -9,7 +9,26 @@ Java data structures demonstrated across `bathroom/`, `S3uploads/`, `groups/`, a
 
 **Source:** [Pirna-spring](https://github.com/adikatre/Pirna-spring) (Spring backend) · [Pirna-pages](https://github.com/adikatre/Pirna-pages) (frontend)
 
-## 1. Collections — ArrayList, HashMap, HashSet
+## Course alignment
+
+| Learning Objective | Evidence Required | Assessment Method |
+| --- | --- | --- |
+| Collections | Use appropriate Java collections (ArrayList, HashMap, HashSet) in backend | Code review: Collection implementations in models/controllers |
+| Lists | Implement list operations for managing data (add, remove, search, iterate) | Code review: List manipulation in service layer |
+| Stacks/Queues | Apply stack/queue structures where appropriate (undo/redo, task queues) | Code review: Stack/queue usage in application logic |
+| Trees | Implement tree structures OR use ML libraries (Smile, Weka) with tree-based algorithms (Decision Tree Classification, Random Forest) | Code review: Tree implementation, organizational hierarchy, or ML model integration |
+| Sets | Use sets for unique data management (user roles, permissions, tags) | Code review: Set operations in authentication/authorization |
+| Dictionaries/Maps | Implement key-value mappings for efficient data lookup | Code review: HashMap/JSONObject usage for configuration |
+| Graphs | Model user relationships/networks using graph structures; implement graph algorithms (friend recommendations via BFS/DFS, community detection, influence ranking, task dependencies, collaboration networks) | Code review: Graph representation (adjacency list/matrix), graph traversal algorithms, pathfinding for recommendations |
+
+---
+
+## Data Structures
+
+### Collections
+
+*Evidence required — use appropriate Java collections (ArrayList, HashMap, HashSet) in backend.*  
+*Assessment — code review: collection implementations in models/controllers.*
 
 `GroupChatPresenceService` uses concurrent maps and a `HashSet` snapshot to track WebSocket presence across groups. The concurrent types behave like the plain `HashMap`/`HashSet` shown here:
 
@@ -71,7 +90,10 @@ public class Main {
 
 ---
 
-## 2. Lists — Add / Remove / Search / Iterate
+### Lists
+
+*Evidence required — implement list operations for managing data (add, remove, search, iterate).*  
+*Assessment — code review: list manipulation in service layer.*
 
 `Groups` wraps a JPA `List<Person>` and exposes safe add/remove operations using `contains`. The same guard logic runs below with plain `String` members:
 
@@ -136,7 +158,10 @@ public class Main {
 
 ---
 
-## 3. Stacks / Queues — BathroomQueue (FIFO)
+### Stacks/Queues
+
+*Evidence required — apply stack/queue structures where appropriate (undo/redo, task queues).*  
+*Assessment — code review: stack/queue usage in application logic.*
 
 `BathroomQueue` implements queue behavior using a comma-separated string. The enqueue / peek / dequeue logic below is the real algorithm, runnable end-to-end:
 
@@ -182,15 +207,18 @@ public class Main {
 }
 ```
 
-The teacher always approves the student at the front of the line, matching FIFO queue behavior.
+The teacher always approves the student at the front of the line, matching FIFO queue behavior. The bathroom line is the project's "task queue": students enqueue requests and the teacher pops them in arrival order.
 
 **Reference:** `BathroomQueue.java:53-143`
 
 ---
 
-## 4. Trees — Hierarchical Aggregation Structure
+### Trees
 
-`TinkleStatisticsService` uses `Collectors.groupingBy()` to build a hierarchical aggregation (`root -> user -> durations`):
+*Evidence required — implement tree structures OR use ML libraries (Smile, Weka) with tree-based algorithms (Decision Tree Classification, Random Forest).*  
+*Assessment — code review: tree implementation, organizational hierarchy, or ML model integration.*
+
+This project does **not** integrate an ML library (Smile or Weka) and does not train Decision Tree or Random Forest models. It satisfies the rubric's other option — a **tree-shaped organizational hierarchy**. `TinkleStatisticsService` uses `Collectors.groupingBy()` to build a hierarchical aggregation (`root -> user -> durations`), a tree whose root branches into users and whose leaves are each user's duration lists:
 
 ```java run
 // bathroom/TinkleStatisticsService.java (distilled)
@@ -220,13 +248,16 @@ public class Main {
 }
 ```
 
-This tree-like structure is commonly consumed by decision-tree ML systems such as Smile or Weka.
+The `groupingBy` result is a one-level-deep hierarchy: a root node fanning out to one child per user, each child holding that user's leaf durations.
 
 **Reference:** `TinkleStatisticsService.java:27-50`
 
 ---
 
-## 5. Sets — Unique Data with HashSet
+### Sets
+
+*Evidence required — use sets for unique data management (user roles, permissions, tags).*  
+*Assessment — code review: set operations in authentication/authorization.*
 
 `PresenceSession` uses a concurrent set to prevent duplicate group memberships; a `HashSet` snapshot is taken for safe iteration. Uniqueness and the snapshot run below:
 
@@ -251,11 +282,16 @@ public class Main {
 }
 ```
 
+The set enforces that a user belongs to each group at most once — the same uniqueness guarantee the rubric calls for with roles, permissions, or tags.
+
 **Reference:** `GroupChatPresenceService.java:135-152`
 
 ---
 
-## 6. Dictionaries / Maps — Key/Value Analytics
+### Dictionaries/Maps
+
+*Evidence required — implement key-value mappings for efficient data lookup.*  
+*Assessment — code review: HashMap/JSONObject usage for configuration.*
 
 `GroupChatService.getUserAnalytics()` builds nested analytics payloads using `HashMap`:
 
@@ -289,13 +325,18 @@ public class Main {
 }
 ```
 
+Each `HashMap` key gives O(1) lookup of the analytics value, the key-value mapping the rubric asks for.
+
 **References:** `GroupChatService.java:152-195`, `GroupChatService.java:133-141`
 
 ---
 
-## 7. Graphs — Group ↔ Member Adjacency and Traversal
+### Graphs
 
-The `Groups ↔ Person` many-to-many relationship forms a bipartite graph represented as an adjacency list. Building the adjacency list and traversing a person's connected groups runs below:
+*Evidence required — model user relationships/networks using graph structures; implement graph algorithms (friend recommendations via BFS/DFS, community detection, influence ranking, task dependencies, collaboration networks).*  
+*Assessment — code review: graph representation (adjacency list/matrix), graph traversal algorithms, pathfinding for recommendations.*
+
+The `Groups ↔ Person` many-to-many relationship forms a bipartite graph represented as an **adjacency list**. The project implements two of the rubric's required pieces — **graph representation** (adjacency list) and **graph traversal** (a 2-hop walk over a person's connected groups). It does **not** implement PageRank-style influence ranking or topological-sort task dependencies; the 2-hop traversal below is instead the foundation for friend recommendations and mutual-connection discovery. Building the adjacency list and traversing a person's connected groups runs below:
 
 ```java run
 // groups (distilled) — adjacency list + traversal
@@ -326,6 +367,6 @@ public class Main {
 }
 ```
 
-This forms the basis for friend recommendations, mutual-connection discovery, and 2-hop graph queries.
+This adjacency-list representation plus 2-hop traversal forms the basis for friend recommendations and mutual-connection discovery, satisfying the rubric's graph-representation and graph-traversal evidence.
 
 **References:** `Groups.java:30-37`, `GroupChatService.java:152-195`

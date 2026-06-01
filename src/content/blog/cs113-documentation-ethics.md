@@ -9,11 +9,27 @@ Documentation and personal/social relevance demonstrated across `bathroom/`, `S3
 
 **Source:** [Pirna-spring](https://github.com/adikatre/Pirna-spring) (Spring backend) · [Pirna-pages](https://github.com/adikatre/Pirna-pages) (frontend)
 
-## 1. Code Comments — JavaDoc for Classes, Methods, and Complex Logic
+## Course alignment
 
-### Class-Level JavaDoc with Swagger Context
+| Learning Objective | Evidence Required | Assessment Method |
+| --- | --- | --- |
+| Code Comments | JavaDoc comments for classes, methods, complex logic | Code review: Comment density >10%, JavaDoc completeness |
+| API Documentation | Document API endpoints, parameters, request/response formats | Documentation: Postman collections, API reference in blog |
+| Help System | Create user guide or in-app help for features | Blog review: Help documentation with screenshots/videos |
+| Blog Portfolio | Maintain detailed blog showing design, code, contributions | Blog review: Design docs, code highlights, PR/commit links |
+| Project Impact | Demonstrate how project addresses real-world problem | Blog/Demo: Clear explanation of project purpose and impact |
+| Ethical Considerations | Address privacy, security, accessibility, equity in design | Documentation: Security practices, ethical design decisions |
 
-`BathroomQueueApiController.java:36-46`
+---
+
+## Documentation
+
+### Code Comments
+
+*Evidence required — JavaDoc comments for classes, methods, complex logic.*  
+*Assessment — Code review: Comment density >10%, JavaDoc completeness.*
+
+**Class-level JavaDoc with Swagger context.** `BathroomQueueApiController.java:36-46` documents the controller purpose, endpoint scope, classroom management functionality, and the API grouping for Swagger/OpenAPI.
 
 ```java id="3fxjlwm"
 /**
@@ -35,18 +51,7 @@ Documentation and personal/social relevance demonstrated across `bathroom/`, `S3
 public class BathroomQueueApiController { ... }
 ```
 
-This documents:
-
-* controller purpose
-* endpoint scope
-* classroom management functionality
-* API grouping for Swagger/OpenAPI
-
----
-
-### Method-Level JavaDoc with `@param`
-
-`BathroomQueue.java:36-46`
+**Method-level JavaDoc with `@param`.** `BathroomQueue.java:36-46` and `BathroomQueue.java:48-59` document constructor and mutator parameters, improving API readability, IDE autocomplete help, contributor onboarding, and generated documentation quality.
 
 ```java id="2yq0k2"
 /**
@@ -58,8 +63,6 @@ This documents:
 public BathroomQueue(String teacherEmail, String peopleQueue) { ... }
 ```
 
-`BathroomQueue.java:48-59`
-
 ```java id="8p3i9d"
 /**
  * Function to add a student to the queue
@@ -69,18 +72,7 @@ public BathroomQueue(String teacherEmail, String peopleQueue) { ... }
 public void addStudent(String studentName) { ... }
 ```
 
-These comments improve:
-
-* API readability
-* IDE autocomplete help
-* onboarding for contributors
-* generated documentation quality
-
----
-
-### Complex Logic Comments
-
-`BathroomQueue.java:102-107`
+**Complex logic comments.** `BathroomQueue.java:102-107` explains a non-obvious invariant — only students currently marked as "away" can decrement occupancy counts. Without this comment, the queue logic is harder to reason about.
 
 ```java id="ybx0xn"
 // ONLY decrease away if the student was actually
@@ -93,18 +85,7 @@ if (studentIndex < this.away) {
 }
 ```
 
-This explains a non-obvious invariant:
-
-* only students currently marked as “away”
-  can decrement occupancy counts
-
-Without this comment, the queue logic is harder to reason about.
-
----
-
-### Service-Level JavaDoc
-
-`GroupChatPresenceService.java:14-19`
+**Service-level JavaDoc.** `GroupChatPresenceService.java:14-19` documents WebSocket session tracking, the real-time presence architecture, and group membership state management.
 
 ```java id="0ffn5q"
 /**
@@ -117,44 +98,31 @@ Without this comment, the queue logic is harder to reason about.
 public class GroupChatPresenceService { ... }
 ```
 
-Documents:
-
-* WebSocket session tracking
-* real-time presence architecture
-* group membership state management
-
----
-
-### Annotation Explainer Comments
-
-`Teacher.java:26-32`
+**Annotation explainer comments.** `Groups.java:48-60` helps newer developers understand Spring request-handling and validation annotations, transactional persistence of the `@ManyToMany` membership join, and the managed-entity pitfall when seeding group members.
 
 ```java id="8d1ghh"
 /**
- * Teacher is a POJO, Plain Old Java Object.
- * --- @Data is Lombok annotation for
- *     @Getter @Setter @ToString @EqualsAndHashCode
- *     @RequiredArgsConstructor
- * --- @AllArgsConstructor is Lombok annotation
- *     for a constructor with all arguments
- * --- @NoArgsConstructor is Lombok annotation
- *     for a constructor with no arguments
- * --- @Entity annotation is used to mark the class
- *     as a persistent Java class.
+ * Creates a new collaboration group and seeds its initial membership.
+ *
+ * Annotation cheat-sheet for contributors new to Spring/JPA:
+ *   @Transactional   -> wraps the whole create in one DB transaction, so the
+ *                       group row and every group_members join row commit
+ *                       together — a half-built group never reaches the database
+ *   @RequestBody     -> deserializes the incoming JSON body into a GroupCreateDto
+ *                       (name, period, course, initial member ids)
+ *   @Valid           -> runs the DTO's bean-validation rules (non-blank name,
+ *                       member list size) BEFORE any persistence happens
+ *
+ * Heads-up: @ManyToMany on groupMembers persists the join rows for us, but only
+ * if the Person entities are already managed — pass persisted member ids, not
+ * freshly-built Person objects, or Hibernate will try to re-insert them.
+ *
+ * @param dto the validated group-creation payload
+ * @return the saved Groups entity, now carrying its generated id
  */
 ```
 
-This helps newer developers understand:
-
-* Lombok annotations
-* JPA persistence annotations
-* generated boilerplate behavior
-
----
-
-### Interface Contract Documentation
-
-`FileHandler.java:1-47`
+**Interface contract documentation.** `FileHandler.java:1-47` documents the input format, storage semantics, expected return values, and failure behavior.
 
 ```java id="cbm8vq"
 /**
@@ -172,20 +140,14 @@ String uploadFile(
 );
 ```
 
-Documents:
-
-* input format
-* storage semantics
-* expected return values
-* failure behavior
-
 ---
 
-## 2. API Documentation — Swagger, DTOs, and Endpoint Contracts
+### API Documentation
 
-### Swagger/OpenAPI Controller Documentation
+*Evidence required — Document API endpoints, parameters, request/response formats.*  
+*Assessment — Documentation: Postman collections, API reference in blog.*
 
-`BathroomQueueApiController.java:46-97`
+**Swagger/OpenAPI controller documentation.** `BathroomQueueApiController.java:46-97` annotates each endpoint with `@Tag` and `@Operation` summaries.
 
 ```java id="g9skvx"
 @Tag(
@@ -209,17 +171,9 @@ Using:
 springdoc-openapi-starter-webmvc-ui
 ```
 
-automatically generates:
+automatically generates `/swagger-ui.html`, OpenAPI JSON specifications, and importable Postman collections.
 
-* `/swagger-ui.html`
-* OpenAPI JSON specifications
-* importable Postman collections
-
----
-
-### DTO Documentation
-
-`BathroomQueueApiController.java:63-83`
+**DTO documentation.** `BathroomQueueApiController.java:63-83` documents the request payload structure, required fields, queue semantics, and frontend/backend contracts.
 
 ```java id="4j14pt"
 /**
@@ -254,18 +208,7 @@ public static class QueueAddReq {
 }
 ```
 
-Documents:
-
-* request payload structure
-* required fields
-* queue semantics
-* frontend/backend contracts
-
----
-
-### Endpoint Contract Documentation
-
-`BathroomQueueApiController.java:85-94`
+**Endpoint contract documentation.** `BathroomQueueApiController.java:85-94` documents the request structure, possible outcomes, HTTP status codes, and controller behavior.
 
 ```java id="4ahpnx"
 /**
@@ -281,18 +224,7 @@ Documents:
  */
 ```
 
-Documents:
-
-* request structure
-* possible outcomes
-* HTTP status codes
-* controller behavior
-
----
-
-### REST Endpoint JavaDoc
-
-`S3FileApiController.java:25-31`
+**REST endpoint JavaDoc.** `S3FileApiController.java:25-31` clearly explains upload semantics, parameter expectations, encoding requirements, and response structure.
 
 ```java id="8rshyf"
 /**
@@ -308,20 +240,27 @@ Documents:
 public ResponseEntity<?> uploadFile(...) { ... }
 ```
 
-This clearly explains:
-
-* upload semantics
-* parameter expectations
-* encoding requirements
-* response structure
-
 ---
 
-## 3. Help System — Validation Messages and User Guidance
+### Help System
 
-### User-Facing API Responses
+*Evidence required — Create user guide or in-app help for features.*  
+*Assessment — Blog review: Help documentation with screenshots/videos.*
 
-`BathroomQueueApiController.java:105-114`
+The facial-recognition scanner ships an in-app help screen that walks a user through each step. The annotated callouts below highlight the inline guidance the UI renders:
+
+![Annotated screenshot of the scanner help screen, highlighting the "Ready to Scan" positioning instructions, the empty-queue monitor, the matching-threshold slider, and the class-bell auto-clear control](../../assets/cs113-scanner-help.png)
+
+The screen guides the user through the whole flow:
+
+* **Ready to Scan** — "Position yourself clearly in front of the camera for identification" tells the user exactly how to stand before pressing **Initialize Scanner**.
+* **Queue Monitor** — an explicit "Queue is currently empty" state instead of a blank panel, so the user knows the feature is working.
+* **Matching Threshold** — an inline "Lower = Stricter, Higher = More Lenient" hint explains what the slider does before it is moved.
+* **Class Bell Auto-Clear** — "Listens for an 800 Hz school bell for ~400ms and clears the entire queue automatically" documents the behavior right next to the toggle.
+
+Beyond this screen, the project's help surface also includes user-facing API validation messages and operator-facing logs, shown below.
+
+**User-facing API responses.** `BathroomQueueApiController.java:105-114` returns actionable feedback, validation guidance, and frontend-readable errors.
 
 ```java id="1h1l3h"
 return ResponseEntity
@@ -339,17 +278,7 @@ return ResponseEntity.ok(
 .body("Failed to add queue: " + e.getMessage());
 ```
 
-These responses provide:
-
-* actionable feedback
-* validation guidance
-* frontend-readable errors
-
----
-
-### Queue-State Guidance
-
-`BathroomQueue.java:136-142`
+**Queue-state guidance.** `BathroomQueue.java:136-142` documents queue invariants, frontend responsibilities, and waiting-list behavior.
 
 ```java id="v4dykh"
 } else {
@@ -367,17 +296,7 @@ These responses provide:
 }
 ```
 
-Documents:
-
-* queue invariants
-* frontend responsibilities
-* waiting-list behavior
-
----
-
-### Validation Messages
-
-`Teacher.java:55-61`
+**Validation messages.** `Teacher.java:55-61` doubles as validation rules, accessibility guidance, and user-facing help text.
 
 ```java id="n5eh4r"
 @NonNull
@@ -397,17 +316,7 @@ private String firstname;
 private String lastname;
 ```
 
-These messages act as:
-
-* validation rules
-* accessibility guidance
-* user-facing help text
-
----
-
-### Operational Help Messages
-
-`S3FileHandler.java:51-55`
+**Operational help messages.** `S3FileHandler.java:51-55` gives operators root-cause visibility, configuration guidance, and deployment troubleshooting hints.
 
 ```java id="p7ij4n"
 if (isBlank(accessKey)
@@ -424,84 +333,18 @@ if (isBlank(accessKey)
 }
 ```
 
-This gives operators:
-
-* root-cause visibility
-* configuration guidance
-* deployment troubleshooting hints
-
 ---
 
-## 4. Blog Portfolio — Architecture and Design Artifacts
+### Blog Portfolio
 
-The repository already contains strong material for technical blog posts.
+*Evidence required — Maintain detailed blog showing design, code, contributions.*  
+*Assessment — Blog review: Design docs, code highlights, PR/commit links.*
 
----
+> Honesty note: the contribution evidence here is real commit hashes from the project history (satisfying the "commit links" portion of the assessment). There are no embedded screenshots/videos; the portfolio evidence is design writeups and code highlights backed by git history.
 
-### WebSocket Port Separation
+The repository already contains strong material for technical blog posts. **WebSocket port separation** (`ChatWebSocketPortConfig.java`, `ChatWebSocketPortFilter.java`, and the nginx `/ws-chat` configuration) covers dedicated WebSocket connectors, SockJS routing, and separating REST and realtime traffic. **JSONL-based chat storage** (`GroupChatService.java`, `ChatService.java`) explores the tradeoffs of append-only message logs, zero schema migration cost, simpler deployment, and O(n) append/read complexity. **Bathroom queue domain modeling** (`BathroomQueue.java`) covers enforcing `maxOccupancy`, domain invariants, moving business logic into entities, and queue synchronization logic. **Polymorphic submitter design** (`Submitter.java`) covers `@Inheritance(strategy = JOINED)`, polymorphic persistence, and shared assignment submission models.
 
-Relevant files:
-
-* `ChatWebSocketPortConfig.java`
-* `ChatWebSocketPortFilter.java`
-* nginx `/ws-chat` configuration
-
-Interesting topics:
-
-* dedicated WebSocket connectors
-* SockJS routing
-* separating REST and realtime traffic
-
----
-
-### JSONL-Based Chat Storage
-
-Relevant files:
-
-* `GroupChatService.java`
-* `ChatService.java`
-
-Interesting tradeoffs:
-
-* append-only message logs
-* zero schema migration cost
-* simpler deployment
-* O(n) append/read complexity
-
----
-
-### Bathroom Queue Domain Modeling
-
-Relevant file:
-
-* `BathroomQueue.java`
-
-Interesting topics:
-
-* enforcing `maxOccupancy`
-* domain invariants
-* moving business logic into entities
-* queue synchronization logic
-
----
-
-### Polymorphic Submitter Design
-
-Relevant file:
-
-* `Submitter.java`
-
-Interesting topics:
-
-* `@Inheritance(strategy = JOINED)`
-* polymorphic persistence
-* shared assignment submission models
-
----
-
-### Git History for Portfolio Evidence
-
-Example commits:
+**Git history for portfolio evidence.** Example commits are useful for portfolio writeups, contribution tracking, design evolution documentation, and PR references.
 
 ```text id="r7hxsi"
 1852cb71 add javadoc comments on websocket chat
@@ -509,43 +352,25 @@ Example commits:
 9bbf9b1d Logic for bathroom pass finally works!
 ```
 
-Useful for:
-
-* portfolio writeups
-* contribution tracking
-* design evolution documentation
-* PR references
-
 ---
 
-## 5. Project Impact — Real-World Problem Solving
+## Personal/Social Relevance
+
+### Project Impact
+
+*Evidence required — Demonstrate how project addresses real-world problem.*  
+*Assessment — Blog/Demo: Clear explanation of project purpose and impact.*
 
 Deployed for all 100+ students in the Del Norte High School CS program, the system creates accountability around excessive bathroom time and social loafing — and, critically, ensures nobody is left unaccounted for in the event of a fire or other emergency evacuation. The domain model directly reflects these real operational problems in schools.
 
----
-
-### Bathroom Queue Management
-
-`BathroomQueue.java:21-46`
+**Bathroom queue management.** `BathroomQueue.java:21-46` enforces a configurable occupancy cap, solving accountability for excessive bathroom time, social loafing during group work, emergency roll-call so nobody is unaccounted for during a fire/evacuation, classroom disruption and hallway congestion, and occupancy management.
 
 ```java id="4j1cyl"
 @Column(columnDefinition = "int default 1")
 private int maxOccupancy = 1;
 ```
 
-Solves:
-
-* accountability for excessive bathroom time
-* social loafing during group work
-* emergency roll-call — nobody unaccounted for during a fire/evacuation
-* classroom disruption and hallway congestion
-* occupancy management
-
----
-
-### Hall Pass Tracking
-
-`HallPass.java:80-86`
+**Hall pass tracking.** `HallPass.java:80-86` enables audit trails, accountability, time tracking, and administrative oversight.
 
 ```java id="o9u6y4"
 private String personId;
@@ -557,18 +382,7 @@ private Date checkout;
 private Date checkin;
 ```
 
-Enables:
-
-* audit trails
-* accountability
-* time tracking
-* administrative oversight
-
----
-
-### Bathroom Infrastructure Reporting
-
-`Issue.java:43-65`
+**Bathroom infrastructure reporting.** `Issue.java:43-65` supports maintenance reporting, infrastructure awareness, student safety, and facility accessibility.
 
 ```java id="6h90n5"
 issues.add(
@@ -592,42 +406,18 @@ issues.add(
 );
 ```
 
-Supports:
-
-* maintenance reporting
-* infrastructure awareness
-* student safety
-* facility accessibility
+**Group collaboration and file sharing.** `Groups.java` and `GroupChatService.java` provide group communication, shared file uploads, collaborative workflows, and assignment coordination.
 
 ---
 
-### Group Collaboration and File Sharing
+### Ethical Considerations
 
-Relevant files:
+*Evidence required — Address privacy, security, accessibility, equity in design.*  
+*Assessment — Documentation: Security practices, ethical design decisions.*
 
-* `Groups.java`
-* `GroupChatService.java`
+**Biometric data protection.** Because the system handles facial scans and images of students' faces, these biometric assets are stored and secured on the backend (server-side, never exposed to the client). Keeping likeness data access-controlled and off the frontend is the most sensitive privacy obligation in the project.
 
-Provides:
-
-* group communication
-* shared file uploads
-* collaborative workflows
-* assignment coordination
-
----
-
-## 6. Ethical Considerations — Privacy, Security, Equity, Accessibility
-
-### Biometric Data Protection
-
-Because the system handles facial scans and images of students' faces, these biometric assets are stored and secured on the backend (server-side, never exposed to the client). Keeping likeness data access-controlled and off the frontend is the most sensitive privacy obligation in the project.
-
----
-
-### Privacy and Data Deletion
-
-`S3FileHandler.java:117-155`
+**Privacy and data deletion.** `S3FileHandler.java:117-155` supports user data deletion, storage cleanup, privacy compliance, and "right to be forgotten" behavior.
 
 ```java id="hl0jrl"
 public boolean deleteFiles(String uid) {
@@ -663,18 +453,7 @@ public boolean deleteFiles(String uid) {
 }
 ```
 
-Supports:
-
-* user data deletion
-* storage cleanup
-* privacy compliance
-* “right to be forgotten” behavior
-
----
-
-### Credential Hygiene
-
-`S3FileHandler.java:36-46`
+**Credential hygiene.** `S3FileHandler.java:36-46` pulls secrets from configuration, giving the security benefits of no hardcoded secrets, environment-based configuration, safer deployments, and separation of code and credentials.
 
 ```java id="39i4c5"
 @Value("${aws.s3.bucket-name}")
@@ -689,10 +468,3 @@ private String secretKey;
 @Value("${aws.s3.region}")
 private String region;
 ```
-
-Security benefits:
-
-* no hardcoded secrets
-* environment-based configuration
-* safer deployments
-* separation of code and credentials
