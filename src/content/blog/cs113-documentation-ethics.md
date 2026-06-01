@@ -340,7 +340,11 @@ if (isBlank(accessKey)
 *Evidence required — Maintain detailed blog showing design, code, contributions.*  
 *Assessment — Blog review: Design docs, code highlights, PR/commit links.*
 
-> Honesty note: the contribution evidence here is real commit hashes from the project history (satisfying the "commit links" portion of the assessment). There are no embedded screenshots/videos; the portfolio evidence is design writeups and code highlights backed by git history.
+> Honesty note: the contribution evidence here is real commit hashes plus the GitHub commit-activity graph below (satisfying the "contributions" and "commit links" portions of the assessment). The portfolio evidence is design writeups and code highlights backed by that git history.
+
+My contribution to the project is quantified by GitHub's commit-activity graph — **253 commits** (ranked #4 among contributors), landing steadily from September 2025 through release:
+
+![Commit-activity bar chart for adikatre on the project, totalling 253 commits from September 2025 through May 2026](../../assets/cs113-commit-activity.png)
 
 The repository already contains strong material for technical blog posts. **WebSocket port separation** (`ChatWebSocketPortConfig.java`, `ChatWebSocketPortFilter.java`, and the nginx `/ws-chat` configuration) covers dedicated WebSocket connectors, SockJS routing, and separating REST and realtime traffic. **JSONL-based chat storage** (`GroupChatService.java`, `ChatService.java`) explores the tradeoffs of append-only message logs, zero schema migration cost, simpler deployment, and O(n) append/read complexity. **Bathroom queue domain modeling** (`BathroomQueue.java`) covers enforcing `maxOccupancy`, domain invariants, moving business logic into entities, and queue synchronization logic. **Polymorphic submitter design** (`Submitter.java`) covers `@Inheritance(strategy = JOINED)`, polymorphic persistence, and shared assignment submission models.
 

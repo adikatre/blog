@@ -29,6 +29,14 @@ Software development concepts demonstrated across `bathroom/`, `S3uploads/`, `gr
 *Evidence required — Use Git for branching, committing, pull requests, code reviews.*  
 *Assessment — GitHub: Commit history, PR descriptions, branch strategy.*
 
+Development was steady and sustained rather than crammed before a deadline. My GitHub contribution graph shows **968 contributions over the last year**, with activity spread across nearly every week:
+
+![GitHub contribution heatmap for adikatre showing 968 contributions in the last year, with green activity squares spread across all twelve months](../../assets/cs113-github-contributions.png)
+
+Scoped to this project, the commit-activity graph shows **253 commits** (ranked #4 among contributors) landing consistently from the project's start through release:
+
+![Commit-activity bar chart for adikatre on the project, totalling 253 commits from September 2025 through May 2026](../../assets/cs113-commit-activity.png)
+
 Running `git log --oneline` scoped to these directories shows a clean feature timeline with focused commits.
 
 ```text
