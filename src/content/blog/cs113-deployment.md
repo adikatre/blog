@@ -278,8 +278,6 @@ This guarantees that authentication traffic, JWT cookies, upload payloads, and b
 *Evidence required — Implement automated deployment pipeline.*  
 *Assessment — GitHub Actions: Workflow files, successful deployments.*
 
-**What's automated vs. manual:** Today, CI/CD automates only the **Jekyll frontend** (`pages.opencodingsociety.com`). The Spring **backend** (`spring.opencodingsociety.com`) is still deployed by hand; the "Minimal Backend CI/CD Pipeline Recommendation" below is a proposed future workflow, not something that currently runs.
-
 The frontend (`pages.opencodingsociety.com`, a Jekyll site) is built and deployed automatically by a GitHub Actions workflow under `.github/workflows/`. On every push to `main` — and on manual `workflow_dispatch` — it:
 
 * sets up Ruby + Bundler (cached) and a Python virtual environment
@@ -382,25 +380,3 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v5
 ```
-
-**Minimal Backend CI/CD Pipeline Recommendation (proposed, not yet implemented).** The Spring backend (`spring.opencodingsociety.com`) is still deployed by hand. A minimal GitHub Actions workflow for the backend *could* (this does not exist yet) install Java 21:
-
-```yaml
-setup-java@v4
-```
-
-build and test the application:
-
-```bash
-mvn -B package
-mvn test
-```
-
-build and push the Docker image:
-
-```bash
-docker build .
-docker push
-```
-
-then SSH into the production host and restart the containers behind nginx. This would automate deployment for all REST controllers, WebSocket services, JPA repositories, and S3 integrations.
